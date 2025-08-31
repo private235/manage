@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نتائج الامتحانات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f3f4f6;
+            direction: rtl;
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #4f46e5;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="container mx-auto mt-4 md:mt-10 bg-white shadow-lg rounded-lg p-4 md:p-8">
+        <h1 class="text-xl md:text-3xl font-bold text-center text-indigo-700 mb-4 md:mb-6">نتائج الامتحانات</h1>
+
+        <div class="flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4 mb-4 md:mb-6">
+            <select id="year-filter" class="form-select w-full md:w-1/4 px-4 py-2 text-sm md:text-base font-normal text-gray-700 bg-white border border-solid border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                <option value="all">جميع السنوات</option>
+                <option value="أولى">أولى</option>
+                <option value="ثانية كيمياء">ثانية كيمياء</option>
+                <option value="ثانية فيزياء">ثانية فيزياء</option>
+                <option value="ثالثة">ثالثة</option>
+            </select>
+
+            <select id="exam-filter" class="form-select w-full md:w-1/4 px-4 py-2 text-sm md:text-base font-normal text-gray-700 bg-white border border-solid border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                <option value="all">جميع الامتحانات</option>
+                </select>
+
+            <input type="text" id="email-search" placeholder="بحث بالبريد الإلكتروني..." class="form-input w-full md:w-1/2 px-4 py-2 text-sm md:text-base font-normal text-gray-700 bg-white border border-solid border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+        </div>
+
+        <div id="loading" class="flex justify-center items-center h-48">
+            <div class="loading-spinner"></div>
+            <p class="mr-4 text-gray-600">جاري تحميل البيانات...</p>
+        </div>
+
+        <div id="content" class="hidden">
+            <div class="overflow-x-auto rounded-lg shadow-md">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-indigo-600 text-white">
+                        <tr>
+                            <th scope="col" class="px-3 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium uppercase tracking-wider text-center">
+                                اسم الامتحان
+                            </th>
+                            <th scope="col" class="px-3 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium uppercase tracking-wider text-center">
+                                السنة الدراسية
+                            </th>
+                            <th scope="col" class="px-3 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium uppercase tracking-wider text-center">
+                                البريد الإلكتروني للطالب
+                            </th>
+                            <th scope="col" class="px-3 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium uppercase tracking-wider text-center">
+                                الدرجة
+                            </th>
+                            <th scope="col" class="px-3 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium uppercase tracking-wider text-center">
+                                مسح
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="error-message" class="hidden text-center mt-8 text-red-500 font-bold">
+            حدث خطأ في تحميل البيانات. يرجى التأكد من اتصالك بالإنترنت.
+        </div>
+        <div id="no-data-message" class="hidden text-center mt-8 text-gray-500 font-bold">
+            لا توجد نتائج امتحانات لعرضها.
+        </div>
+    </div>
+
+    <script>
+        // تهيئة Firebase
+        const firebaseConfig = {
+            apiKey: 'AIzaSyBpwRyAO9Hd0y06AFxQP2VJqiwucD02kHE',
+            appId: '1:728424288022:web:3fc8d5379263ca3b99ca37',
+            messagingSenderId: '728424288022',
+            projectId: 'e-learning-3aef4',
+            authDomain: 'e-learning-3aef4.firebaseapp.com',
+            databaseURL: 'https://e-learning-3aef4-default-rtdb.firebaseio.com',
+            storageBucket: 'e-learning-3aef4.firebasestorage.app',
+            measurementId: 'G-GTTZ690T29'
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const database = firebase.database();
+        let allResults = [];
+        let examTitlesByYear = {};
+
+        // جلب العناصر من DOM
+        const loadingElement = document.getElementById('loading');
+        const contentElement = document.getElementById('content');
+        const errorElement = document.getElementById('error-message');
+        const noDataElement = document.getElementById('no-data-message');
+        const tableBody = document.getElementById('results-table-body');
+        const yearFilter = document.getElementById('year-filter');
+        const examFilter = document.getElementById('exam-filter');
+        const emailSearch = document.getElementById('email-search');
+
+        // دالة لجلب البيانات من Firebase وتجهيزها
+        async function fetchData() {
+            loadingElement.classList.remove('hidden');
+            contentElement.classList.add('hidden');
+            noDataElement.classList.add('hidden');
+            errorElement.classList.add('hidden');
+            allResults = [];
+            examTitlesByYear = {};
+
+            try {
+                // جلب بيانات الامتحانات
+                const examsSnapshot = await database.ref('exams').once('value');
+                const examsData = examsSnapshot.val() || {};
+
+                for (const year in examsData) {
+                    examTitlesByYear[year] = {};
+                    for (const examId in examsData[year]) {
+                        const examInfo = examsData[year][examId];
+                        if (examInfo.title && examInfo.questions) {
+                            examTitlesByYear[year][examId] = {
+                                title: examInfo.title,
+                                totalQuestions: Object.keys(examInfo.questions).length
+                            };
+                        }
+                    }
+                }
+                
+                // جلب بيانات المستخدمين
+                const usersSnapshot = await database.ref('users').once('value');
+                const usersData = usersSnapshot.val() || {};
+
+                for (const userId in usersData) {
+                    const user = usersData[userId];
+                    const userEmail = user.email || 'غير معروف';
+                    const completedExams = user.completedExams;
+                    
+                    if (completedExams) {
+                        for (const examId in completedExams) {
+                            const examResult = completedExams[examId];
+                            
+                            let examInfo = null;
+                            let examYear = null;
+                            for (const year in examTitlesByYear) {
+                                if (examTitlesByYear[year][examId]) {
+                                    examInfo = examTitlesByYear[year][examId];
+                                    examYear = year;
+                                    break;
+                                }
+                            }
+
+                            if (examInfo) {
+                                allResults.push({
+                                    userId: userId,
+                                    examId: examId,
+                                    examTitle: examInfo.title,
+                                    examYear: examYear,
+                                    studentEmail: userEmail,
+                                    score: examResult.score,
+                                    totalQuestions: examInfo.totalQuestions
+                                });
+                            }
+                        }
+                    }
+                }
+
+                loadingElement.classList.add('hidden');
+                populateExamFilter();
+                renderResults();
+                
+                if (allResults.length === 0) {
+                    noDataElement.textContent = 'لا توجد نتائج امتحانات لعرضها.';
+                    noDataElement.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                loadingElement.classList.add('hidden');
+                errorElement.classList.remove('hidden');
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        // دالة لملء قائمة الامتحانات المنسدلة
+        function populateExamFilter() {
+            const selectedYear = yearFilter.value;
+            examFilter.innerHTML = '<option value="all">جميع الامتحانات</option>';
+            
+            let examsToDisplay = [];
+            if (selectedYear === 'all') {
+                for (const year in examTitlesByYear) {
+                    for (const examId in examTitlesByYear[year]) {
+                        examsToDisplay.push(examTitlesByYear[year][examId].title);
+                    }
+                }
+            } else {
+                for (const examId in examTitlesByYear[selectedYear]) {
+                    examsToDisplay.push(examTitlesByYear[selectedYear][examId].title);
+                }
+            }
+            
+            const uniqueExams = [...new Set(examsToDisplay)].sort((a, b) => a.localeCompare(b, 'ar'));
+            uniqueExams.forEach(title => {
+                const option = document.createElement('option');
+                option.value = title;
+                option.textContent = title;
+                examFilter.appendChild(option);
+            });
+        }
+
+        // دالة لعرض النتائج بناءً على الفلاتر
+        function renderResults() {
+            tableBody.innerHTML = '';
+            let filteredResults = allResults;
+
+            const selectedYear = yearFilter.value;
+            const selectedExam = examFilter.value;
+            const searchTerm = emailSearch.value.toLowerCase().trim();
+
+            if (selectedYear !== 'all') {
+                filteredResults = filteredResults.filter(result => result.examYear === selectedYear);
+            }
+
+            if (selectedExam !== 'all') {
+                filteredResults = filteredResults.filter(result => result.examTitle === selectedExam);
+            }
+
+            if (searchTerm) {
+                filteredResults = filteredResults.filter(result => result.studentEmail.toLowerCase().includes(searchTerm));
+            }
+
+            if (filteredResults.length > 0) {
+                filteredResults.forEach(result => {
+                    const row = document.createElement('tr');
+                    row.classList.add('hover:bg-gray-100', 'transition-colors', 'duration-200');
+                    row.innerHTML = `
+                        <td class="px-3 py-2 md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-900 text-center">${result.examTitle}</td>
+                        <td class="px-3 py-2 md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-900 text-center">${result.examYear}</td>
+                        <td class="px-3 py-2 md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-900 text-center">${result.studentEmail}</td>
+                        <td class="px-3 py-2 md:px-6 md:py-4 whitespace-nowrap text-sm font-bold text-indigo-600 text-center">${result.score} / ${result.totalQuestions}</td>
+                        <td class="px-3 py-2 md:px-6 md:py-4 whitespace-nowrap text-sm text-center">
+                            <button onclick="deleteResult('${result.userId}', '${result.examId}', ${result.score})" class="text-red-600 hover:text-red-800 font-bold">مسح</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                contentElement.classList.remove('hidden');
+                noDataElement.classList.add('hidden');
+            } else {
+                contentElement.classList.add('hidden');
+                noDataElement.classList.remove('hidden');
+                noDataElement.textContent = `لا توجد نتائج مطابقة للمعايير المحددة.`;
+            }
+        }
+        
+        // دالة لحذف نتيجة الامتحان من قاعدة البيانات
+        async function deleteResult(userId, examId, score) {
+            if (confirm('هل أنت متأكد من حذف هذه النتيجة؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+                try {
+                    // حذف النتيجة من قائمة الامتحانات المكتملة
+                    await database.ref(`users/${userId}/completedExams/${examId}`).remove();
+                    
+                    // تحديث مجموع درجات الطالب
+                    await database.ref(`users/${userId}/marks`).transaction(currentMarks => {
+                        return (currentMarks || 0) - score;
+                    });
+                    
+                    alert('تم حذف النتيجة بنجاح.');
+                    // إعادة جلب البيانات لتحديث الجدول
+                    fetchData();
+                } catch (error) {
+                    console.error("Error deleting result:", error);
+                    alert('حدث خطأ أثناء حذف النتيجة.');
+                }
+            }
+        }
+        
+        // ربط الدوال بالنافذة لكي تكون قابلة للوصول من الزر
+        window.deleteResult = deleteResult;
+
+        // إضافة مستمعي الأحداث للفلاتر والبحث
+        yearFilter.addEventListener('change', () => {
+            populateExamFilter();
+            renderResults();
+        });
+        examFilter.addEventListener('change', renderResults);
+        emailSearch.addEventListener('input', renderResults);
+
+        // بدء جلب البيانات عند تحميل الصفحة
+        fetchData();
+    </script>
+</body>
+</html>

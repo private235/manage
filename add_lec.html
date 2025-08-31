@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة محاضرة</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #f0f0f5, #ffffff);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 24px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            direction: rtl;
+        }
+        .appbar {
+            background-color: #6C5CE7;
+            color: white;
+            padding: 16px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+            margin: -24px -24px 24px -24px;
+        }
+        .appbar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2D3436;
+        }
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .file-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .file-picker label {
+            background-color: #A29BFE;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+        }
+        .file-picker label:hover {
+            background-color: #8C80F7;
+        }
+        .file-picker input[type="file"] {
+            display: none;
+        }
+        .file-picker span {
+            font-size: 14px;
+            color: #555;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .upload-btn {
+            background-color: #00CE9F;
+        }
+        .upload-btn:hover {
+            background-color: #00B38B;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .progress {
+            height: 100%;
+            width: 0%;
+            background-color: #6C5CE7;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #2D3436;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="appbar">
+        <h1>إضافة محاضرة</h1>
+    </div>
+
+    <div class="input-group">
+        <label for="lectureNumber">رقم المحاضرة</label>
+        <input type="number" id="lectureNumber" placeholder="أدخل رقم المحاضرة">
+    </div>
+
+    <div class="input-group">
+        <label for="title">عنوان المحاضرة</label>
+        <input type="text" id="title" placeholder="أدخل عنوان المحاضرة">
+    </div>
+
+    <div class="input-group">
+        <label for="year">السنة الدراسية</label>
+        <select id="year">
+            <option value="first">سنة أولى</option>
+            <option value="second_chemistry">ثانية كيمياء</option>
+            <option value="second_physics">ثانية فيزياء</option>
+            <option value="third" selected>سنة ثالثة</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <div class="file-picker">
+            <label for="videoFile">اختيار فيديو</label>
+            <input type="file" id="videoFile" accept="video/*">
+            <span id="videoFileName">لم يتم اختيار فيديو</span>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <div class="file-picker">
+            <label for="logoFile">اختيار شعار (اختياري)</label>
+            <input type="file" id="logoFile" accept="image/*">
+            <span id="logoFileName">لم يتم اختيار شعار</span>
+        </div>
+    </div>
+
+    <button id="uploadButton" class="button upload-btn">
+        <span id="uploadText">رفع المحاضرة</span>
+    </button>
+
+    <div id="uploadingStatus" class="hidden">
+        <div class="progress-bar">
+            <div id="progressBar" class="progress"></div>
+        </div>
+        <p id="progressText" class="progress-text">جاري الرفع: 0%</p>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+
+<script>
+    // Your Firebase configuration
+    const firebaseConfig = {
+        apiKey: 'AIzaSyBpwRyAO9Hd0y06AFxQP2VJqiwucD02kHE',
+        authDomain: 'e-learning-3aef4.firebaseapp.com',
+        databaseURL: 'https://e-learning-3aef4-default-rtdb.firebaseio.com',
+        projectId: 'e-learning-3aef4',
+        storageBucket: 'e-learning-3aef4.firebasestorage.app',
+        messagingSenderId: '728424288022',
+        appId: '1:728424288022:web:3fc8d5379263ca3b99ca37',
+        measurementId: 'G-GTTZ690T29'
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const storage = firebase.storage();
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const titleInput = document.getElementById('title');
+        const lectureNumberInput = document.getElementById('lectureNumber');
+        const yearSelect = document.getElementById('year');
+        const videoFileInput = document.getElementById('videoFile');
+        const logoFileInput = document.getElementById('logoFile');
+        const videoFileNameSpan = document.getElementById('videoFileName');
+        const logoFileNameSpan = document.getElementById('logoFileName');
+        const uploadButton = document.getElementById('uploadButton');
+        const uploadingStatus = document.getElementById('uploadingStatus');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const uploadText = document.getElementById('uploadText');
+
+        videoFileInput.addEventListener('change', (event) => {
+            const fileName = event.target.files[0] ? event.target.files[0].name : 'لم يتم اختيار فيديو';
+            videoFileNameSpan.textContent = fileName;
+        });
+
+        logoFileInput.addEventListener('change', (event) => {
+            const fileName = event.target.files[0] ? event.target.files[0].name : 'لم يتم اختيار شعار';
+            logoFileNameSpan.textContent = fileName;
+        });
+
+        uploadButton.addEventListener('click', async () => {
+            const title = titleInput.value.trim();
+            const lectureNumber = lectureNumberInput.value.trim();
+            const selectedYear = yearSelect.value;
+            const videoFile = videoFileInput.files[0];
+            const logoFile = logoFileInput.files[0];
+
+            if (!title || !lectureNumber || !videoFile) {
+                alert('يرجى إدخال جميع البيانات المطلوبة');
+                return;
+            }
+
+            // Show uploading UI
+            uploadText.textContent = 'جاري الرفع...';
+            uploadButton.disabled = true;
+            uploadingStatus.classList.remove('hidden');
+
+            try {
+                const lectureId = Date.now().toString();
+                const baseName = `${lectureNumber} ${title}`;
+
+                // Upload video
+                const videoRef = storage.ref(`videos/${selectedYear}/${baseName}.mp4`);
+                const videoUploadTask = videoRef.put(videoFile);
+
+                videoUploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `جاري الرفع: ${Math.round(progress)}%`;
+                    },
+                    (error) => {
+                        console.error('Video upload failed', error);
+                        alert(`حدث خطأ أثناء رفع الفيديو: ${error.message}`);
+                    },
+                    async () => {
+                        const videoUrl = await videoUploadTask.snapshot.ref.getDownloadURL();
+
+                        // Upload logo (optional)
+                        let logoUrl = '';
+                        if (logoFile) {
+                            const logoRef = storage.ref(`logos/${selectedYear}/${baseName}.jpg`);
+                            const logoUploadTask = logoRef.put(logoFile);
+                            await logoUploadTask;
+                            logoUrl = await logoUploadTask.snapshot.ref.getDownloadURL();
+                        }
+
+                        // Save data to Realtime Database
+                        await database.ref(`lectures/${selectedYear}/${lectureId}`).set({
+                            id: lectureId,
+                            title: title,
+                            lectureNumber: lectureNumber,
+                            year: selectedYear,
+                            videoUrl: videoUrl,
+                            logoUrl: logoUrl,
+                            timestamp: firebase.database.ServerValue.TIMESTAMP
+                        });
+
+                        alert('تم رفع المحاضرة بنجاح!');
+                        
+                        // Reset form
+                        titleInput.value = '';
+                        lectureNumberInput.value = '';
+                        videoFileInput.value = '';
+                        logoFileInput.value = '';
+                        videoFileNameSpan.textContent = 'لم يتم اختيار فيديو';
+                        logoFileNameSpan.textContent = 'لم يتم اختيار شعار';
+                        
+                        // Reset UI
+                        uploadText.textContent = 'رفع المحاضرة';
+                        uploadButton.disabled = false;
+                        uploadingStatus.classList.add('hidden');
+                    }
+                );
+            } catch (error) {
+                console.error('Upload failed', error);
+                alert(`حدث خطأ أثناء رفع المحاضرة: ${error.message}`);
+                
+                // Reset UI in case of error
+                uploadText.textContent = 'رفع المحاضرة';
+                uploadButton.disabled = false;
+                uploadingStatus.classList.add('hidden');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
