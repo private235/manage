@@ -613,17 +613,12 @@
 
             for (const userId in users) {
                 const user = users[userId];
-                // التحقق من حالة الحساب بناءً على الوقت الحالي
-                let isDisabled = user.isDisabled || false;
-                const disableTimestamp = user.disableTimestamp;
-                if (disableTimestamp && disableTimestamp < Date.now()) {
-                    isDisabled = true;
-                }
-                
+                // التحقق من حالة الحساب بناءً على القيمة في قاعدة البيانات
+                const isDisabled = user.isDisabled || false;
                 const deviceId = user.deviceId || 'غير معروف';
                 const userYear = user.year || 'غير محدد';
                 const password = user.password || 'غير محدد';
-                const disableDate = disableTimestamp ? formatTimestamp(disableTimestamp) : 'غير محدد';
+                const disableDate = user.disableTimestamp ? formatTimestamp(user.disableTimestamp) : 'غير محدد';
 
                 const userCard = document.createElement('div');
                 userCard.className = 'user-card';
@@ -667,41 +662,15 @@
             attachButtonListeners();
         }
 
-        // دالة للتحقق من الحسابات المنتهية وتحديثها
-        async function checkAndDisableExpiredAccounts(usersData) {
-            const updates = {};
-            const now = Date.now();
-            for (const userId in usersData) {
-                const user = usersData[userId];
-                if (user.disableTimestamp && user.disableTimestamp < now && (user.isDisabled === false || user.isDisabled === undefined)) {
-                    updates[`users/${userId}/isDisabled`] = true;
-                }
-            }
-
-            if (Object.keys(updates).length > 0) {
-                try {
-                    await database.ref().update(updates);
-                    showAlert('تم تعطيل بعض الحسابات تلقائيًا لانتهاء صلاحيتها.', 'success');
-                } catch (error) {
-                    console.error('Error auto-disabling accounts:', error);
-                }
-            }
-        }
-
         // تحميل الأعضاء من قاعدة البيانات وتخزينهم
         function loadUsers() {
             const usersList = document.getElementById('users-list');
             usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>جاري تحميل بيانات الأعضاء...</p></div>';
 
-            database.ref('users').once('value').then(async (snapshot) => {
+            database.ref('users').on('value', (snapshot) => {
                 allUsersData = snapshot.val() || {};
-                await checkAndDisableExpiredAccounts(allUsersData);
-                // إعادة تحميل البيانات بعد تحديثها
-                database.ref('users').once('value').then((updatedSnapshot) => {
-                    allUsersData = updatedSnapshot.val() || {};
-                    displayUsers(allUsersData);
-                });
-            }).catch(error => {
+                displayUsers(allUsersData);
+            }, (error) => {
                 usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>حدث خطأ في تحميل الأعضاء</p></div>';
                 console.error('Error loading users:', error);
                 showAlert('حدث خطأ في تحميل بيانات الأعضاء', 'danger');
@@ -774,7 +743,6 @@
 
                 showAlert('تم تحديث وقت التعطيل بنجاح.', 'success');
                 closeModal('edit-user-modal');
-                loadUsers();
             } catch (error) {
                 console.error('Error updating disable time:', error);
                 showAlert('حدث خطأ أثناء تحديث وقت التعطيل.', 'danger');
@@ -846,7 +814,6 @@
 
                 showAlert('تم مسح معرف الجهاز بنجاح. يمكن للعضو الآن تسجيل الدخول من جهاز آخر.', 'success');
                 closeModal('clear-device-modal');
-                loadUsers();
             } catch (error) {
                 console.error('Error clearing device ID:', error);
                 showAlert('حدث خطأ أثناء مسح معرف الجهاز', 'danger');
@@ -874,7 +841,6 @@
                 });
                 showAlert('تم تسجيل خروج العضو بنجاح.', 'success');
                 closeModal('force-logout-modal');
-                loadUsers();
             } catch (error) {
                 console.error('Error forcing logout:', error);
                 showAlert('حدث خطأ أثناء تسجيل الخروج الإجباري.', 'danger');
@@ -901,7 +867,6 @@
 
                 showAlert('تم حذف العضو بنجاح', 'success');
                 closeModal('delete-user-modal');
-                loadUsers();
             } catch (error) {
                 console.error('Error deleting user:', error);
                 showAlert('حدث خطأ أثناء حذف الحساب', 'danger');
@@ -937,7 +902,6 @@
                 
                 showAlert(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} الحساب بنجاح.`, 'success');
                 closeModal('toggle-status-modal');
-                loadUsers();
             } catch (error) {
                 console.error('Error toggling user status:', error);
                 showAlert(`حدث خطأ أثناء ${newStatus ? 'تعطيل' : 'تفعيل'} الحساب.`, 'danger');
