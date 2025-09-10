@@ -1,336 +1,482 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إضافة محاضرة</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom, #f0f0f5, #ffffff);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            direction: rtl;
-        }
-        .appbar {
-            background-color: #6C5CE7;
-            color: white;
-            padding: 16px;
-            border-radius: 8px 8px 0 0;
-            text-align: center;
-            margin: -24px -24px 24px -24px;
-        }
-        .appbar h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #2D3436;
-        }
-        .input-group input,
-        .input-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        .file-picker {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .file-picker label {
-            background-color: #A29BFE;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            white-space: nowrap;
-        }
-        .file-picker label:hover {
-            background-color: #8C80F7;
-        }
-        .file-picker input[type="file"] {
-            display: none;
-        }
-        .file-picker span {
-            font-size: 14px;
-            color: #555;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .button {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .upload-btn {
-            background-color: #00CE9F;
-        }
-        .upload-btn:hover {
-            background-color: #00B38B;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-        .progress {
-            height: 100%;
-            width: 0%;
-            background-color: #6C5CE7;
-            border-radius: 5px;
-            transition: width 0.3s ease;
-        }
-        .progress-text {
-            text-align: center;
-            margin-top: 10px;
-            font-weight: bold;
-            color: #2D3436;
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة المحاضرات</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+background: linear-gradient(to bottom, #f0f0f5, #ffffff);
+margin: 0;
+padding: 0;
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+}
+.container {
+width: 100%;
+max-width: 600px;
+padding: 24px;
+background-color: #fff;
+border-radius: 12px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+direction: rtl;
+}
+.appbar {
+background-color: #6C5CE7;
+color: white;
+padding: 16px;
+border-radius: 8px 8px 0 0;
+text-align: center;
+margin: -24px -24px 24px -24px;
+}
+.appbar h1 {
+margin: 0;
+font-size: 24px;
+}
+.input-group {
+margin-bottom: 20px;
+}
+.input-group label {
+display: block;
+margin-bottom: 8px;
+font-weight: bold;
+color: #2D3436;
+}
+.input-group input,
+.input-group select {
+width: 100%;
+padding: 12px;
+border: 1px solid #ccc;
+border-radius: 8px;
+box-sizing: border-box;
+font-size: 16px;
+}
+.file-picker {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-bottom: 10px;
+}
+.file-picker label {
+background-color: #A29BFE;
+color: white;
+padding: 10px 15px;
+border-radius: 8px;
+cursor: pointer;
+transition: background-color 0.3s ease;
+white-space: nowrap;
+}
+.file-picker label:hover {
+background-color: #8C80F7;
+}
+.file-picker input[type="file"] {
+display: none;
+}
+.file-picker span {
+font-size: 14px;
+color: #555;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+.button {
+width: 100%;
+padding: 15px;
+border: none;
+border-radius: 8px;
+font-size: 18px;
+font-weight: bold;
+color: white;
+cursor: pointer;
+transition: background-color 0.3s ease;
+}
+.upload-btn {
+background-color: #00CE9F;
+margin-bottom: 10px;
+}
+.upload-btn:hover {
+background-color: #00B38B;
+}
+.delete-btn {
+background-color: #E74C3C;
+}
+.delete-btn:hover {
+background-color: #C0392B;
+}
+.progress-bar {
+width: 100%;
+height: 10px;
+background-color: #e0e0e0;
+border-radius: 5px;
+margin-top: 15px;
+}
+.progress {
+height: 100%;
+width: 0%;
+background-color: #6C5CE7;
+border-radius: 5px;
+transition: width 0.3s ease;
+}
+.progress-text {
+text-align: center;
+margin-top: 10px;
+font-weight: bold;
+color: #2D3436;
+}
+.hidden {
+display: none;
+}
+.modal {
+display: none;
+position: fixed;
+z-index: 1;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+overflow: auto;
+background-color: rgba(0,0,0,0.4);
+padding-top: 60px;
+}
+.modal-content {
+background-color: #fefefe;
+margin: 5% auto;
+padding: 20px;
+border: 1px solid #888;
+width: 80%;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+.modal-header {
+padding: 10px 16px;
+background-color: #6C5CE7;
+color: white;
+border-radius: 8px 8px 0 0;
+}
+.modal-body {
+padding: 2px 16px;
+}
+.modal-body ul {
+list-style: none;
+padding: 0;
+}
+.modal-body li {
+padding: 10px;
+border-bottom: 1px solid #eee;
+cursor: pointer;
+transition: background-color 0.3s ease;
+}
+.modal-body li:hover {
+background-color: #f1f1f1;
+}
+.modal-footer {
+padding: 10px 16px;
+text-align: right;
+}
+.close {
+color: #aaa;
+float: left;
+font-size: 28px;
+font-weight: bold;
+margin-left: 10px;
+}
+.close:hover, .close:focus {
+color: black;
+text-decoration: none;
+cursor: pointer;
+}
+.delete-list-item {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 10px;
+border-bottom: 1px solid #eee;
+}
+.delete-list-item:last-child {
+border-bottom: none;
+}
+.delete-list-item button {
+background-color: #E74C3C;
+color: white;
+border: none;
+padding: 5px 10px;
+border-radius: 5px;
+cursor: pointer;
+}
+</style>
 </head>
 <body>
-
 <div class="container">
-    <div class="appbar">
-        <h1>إضافة محاضرة</h1>
-    </div>
-
-    <div class="input-group">
-        <label for="lectureNumber">رقم المحاضرة</label>
-        <input type="number" id="lectureNumber" placeholder="أدخل رقم المحاضرة">
-    </div>
-
-    <div class="input-group">
-        <label for="title">عنوان المحاضرة</label>
-        <input type="text" id="title" placeholder="أدخل عنوان المحاضرة">
-    </div>
-
-    <div class="input-group">
-        <label for="year">السنة الدراسية</label>
-        <select id="year">
-            <option value="first">سنة أولى</option>
-            <option value="second_chemistry">ثانية كيمياء</option>
-            <option value="second_physics">ثانية فيزياء</option>
-            <option value="third" selected>سنة ثالثة</option>
-        </select>
-    </div>
-
-    <div class="input-group">
-        <div class="file-picker">
-            <label for="videoFile">اختيار فيديو</label>
-            <input type="file" id="videoFile" accept="video/*">
-            <span id="videoFileName">لم يتم اختيار فيديو</span>
-        </div>
-    </div>
-
-    <div class="input-group">
-        <div class="file-picker">
-            <label for="logoFile">اختيار شعار (اختياري)</label>
-            <input type="file" id="logoFile" accept="image/*">
-            <span id="logoFileName">لم يتم اختيار شعار</span>
-        </div>
-    </div>
-
-    <button id="uploadButton" class="button upload-btn">
-        <span id="uploadText">رفع المحاضرة</span>
-    </button>
-
-    <div id="uploadingStatus" class="hidden">
-        <div class="progress-bar">
-            <div id="progressBar" class="progress"></div>
-        </div>
-        <p id="progressText" class="progress-text">جاري الرفع: 0%</p>
-    </div>
+<div class="appbar">
+<h1>إدارة المحاضرات</h1>
 </div>
-
+<h3>إضافة محاضرة جديدة</h3>
+<div class="input-group">
+<label for="lectureNumber">رقم المحاضرة</label>
+<input type="number" id="lectureNumber" placeholder="أدخل رقم المحاضرة">
+</div>
+<div class="input-group">
+<label for="title">عنوان المحاضرة</label>
+<input type="text" id="title" placeholder="أدخل عنوان المحاضرة">
+</div>
+<div class="input-group">
+<label for="year">السنة الدراسية</label>
+<select id="year">
+<option value="first">سنة أولى</option>
+<option value="second_chemistry">ثانية كيمياء</option>
+<option value="second_physics">ثانية فيزياء</option>
+<option value="third" selected>سنة ثالثة</option>
+</select>
+</div>
+<div class="input-group">
+<div class="file-picker">
+<label for="videoFile">اختيار فيديو</label>
+<input type="file" id="videoFile" accept="video/*">
+<span id="videoFileName">لم يتم اختيار فيديو</span>
+</div>
+</div>
+<div class="input-group">
+<div class="file-picker">
+<label for="logoFile">اختيار شعار (اختياري)</label>
+<input type="file" id="logoFile" accept="image/*">
+<span id="logoFileName">لم يتم اختيار شعار</span>
+</div>
+</div>
+<button id="uploadButton" class="button upload-btn">
+<span id="uploadText">رفع المحاضرة</span>
+</button>
+<div id="uploadingStatus" class="hidden">
+<div class="progress-bar">
+<div id="progressBar" class="progress"></div>
+</div>
+<p id="progressText" class="progress-text">جاري الرفع: 0%</p>
+</div>
+<hr style="margin: 20px 0;">
+<h3>حذف محاضرة موجودة</h3>
+<div class="input-group">
+<label for="deleteYear">السنة الدراسية</label>
+<select id="deleteYear">
+<option value="first">سنة أولى</option>
+<option value="second_chemistry">ثانية كيمياء</option>
+<option value="second_physics">ثانية فيزياء</option>
+<option value="third" selected>سنة ثالثة</option>
+</select>
+</div>
+<button id="showDeleteButton" class="button delete-btn">
+حذف المحاضرة
+</button>
+<div id="deleteModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<span class="close">&times;</span>
+<h2>اختيار محاضرة للحذف</h2>
+</div>
+<div class="modal-body">
+<ul id="lecturesList">
+</ul>
+</div>
+</div>
+</div>
+</div>
 <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js"></script>
-
 <script type="module">
-    // Import the functions from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getDatabase, ref as dbRef, set } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
-    import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js";
-    
-    // Your Firebase configuration
-    const firebaseConfig = {
-        apiKey: 'AIzaSyBpwRyAO9Hd0y06AFxQP2VJqiwucD02kHE',
-        appId: '1:728424288022:web:3fc8d5379263ca3b99ca37',
-        messagingSenderId: '728424288022',
-        projectId: 'e-learning-3aef4',
-        authDomain: 'e-learning-3aef4.firebaseapp.com',
-        databaseURL: 'https://e-learning-3aef4-default-rtdb.firebaseio.com',
-        storageBucket: 'e-learning-3aef4.firebasestorage.app', // <-- This is the corrected line
-        measurementId: 'G-GTTZ690T29',
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const storage = getStorage(app);
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const titleInput = document.getElementById('title');
-        const lectureNumberInput = document.getElementById('lectureNumber');
-        const yearSelect = document.getElementById('year');
-        const videoFileInput = document.getElementById('videoFile');
-        const logoFileInput = document.getElementById('logoFile');
-        const videoFileNameSpan = document.getElementById('videoFileName');
-        const logoFileNameSpan = document.getElementById('logoFileName');
-        const uploadButton = document.getElementById('uploadButton');
-        const uploadingStatus = document.getElementById('uploadingStatus');
-        const progressBar = document.getElementById('progressBar');
-        const progressText = document.getElementById('progressText');
-        const uploadText = document.getElementById('uploadText');
-
-        // Update file name display
-        videoFileInput.addEventListener('change', (event) => {
-            const fileName = event.target.files[0] ? event.target.files[0].name : 'لم يتم اختيار فيديو';
-            videoFileNameSpan.textContent = fileName;
-        });
-
-        logoFileInput.addEventListener('change', (event) => {
-            const fileName = event.target.files[0] ? event.target.files[0].name : 'لم يتم اختيار شعار';
-            logoFileNameSpan.textContent = fileName;
-        });
-
-        uploadButton.addEventListener('click', async () => {
-            const title = titleInput.value.trim();
-            const lectureNumber = lectureNumberInput.value.trim();
-            const selectedYear = yearSelect.value;
-            const videoFile = videoFileInput.files[0];
-            const logoFile = logoFileInput.files[0];
-
-            if (!title || !lectureNumber || !videoFile) {
-                alert('يرجى إدخال جميع البيانات المطلوبة');
-                return;
-            }
-
-            // Show uploading UI
-            uploadText.textContent = 'جاري الرفع...';
-            uploadButton.disabled = true;
-            uploadingStatus.classList.remove('hidden');
-
-            try {
-                const lectureId = Date.now().toString();
-                const baseName = `${lectureNumber}_${title.replace(/\s/g, '_')}`;
-
-                // Upload video
-                const videoStorageRef = storageRef(storage, `lectures_data/${selectedYear}/${baseName}.mp4`);
-                const videoUploadTask = uploadBytesResumable(videoStorageRef, videoFile);
-
-                videoUploadTask.on('state_changed',
-                    (snapshot) => {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        progressBar.style.width = `${progress}%`;
-                        progressText.textContent = `جاري الرفع: ${Math.round(progress)}%`;
-                    },
-                    (error) => {
-                        console.error('Video upload failed', error);
-                        alert(`حدث خطأ أثناء رفع الفيديو: ${error.message}`);
-                        // Reset UI on error
-                        uploadText.textContent = 'رفع المحاضرة';
-                        uploadButton.disabled = false;
-                        uploadingStatus.classList.add('hidden');
-                    },
-                    async () => {
-                        try {
-                            const videoUrl = await getDownloadURL(videoUploadTask.snapshot.ref);
-
-                            // Upload logo (optional)
-                            let logoUrl = '';
-                            if (logoFile) {
-                                const logoStorageRef = storageRef(storage, `lectures_data/${selectedYear}/logos/${baseName}.jpg`);
-                                const logoUploadTask = uploadBytesResumable(logoStorageRef, logoFile);
-                                await logoUploadTask;
-                                logoUrl = await getDownloadURL(logoUploadTask.snapshot.ref);
-                            }
-
-                            // Save data to Realtime Database
-                            await set(dbRef(database, `lectures/${selectedYear}/${lectureId}`), {
-                                id: lectureId,
-                                title: title,
-                                lectureNumber: lectureNumber,
-                                year: selectedYear,
-                                videoUrl: videoUrl,
-                                logoUrl: logoUrl,
-                                timestamp: Date.now()
-                            });
-
-                            alert('تم رفع المحاضرة بنجاح!');
-                            
-                            // Reset form
-                            titleInput.value = '';
-                            lectureNumberInput.value = '';
-                            videoFileInput.value = '';
-                            logoFileInput.value = '';
-                            videoFileNameSpan.textContent = 'لم يتم اختيار فيديو';
-                            logoFileNameSpan.textContent = 'لم يتم اختيار شعار';
-                            
-                            // Reset UI
-                            uploadText.textContent = 'رفع المحاضرة';
-                            uploadButton.disabled = false;
-                            uploadingStatus.classList.add('hidden');
-                        } catch (error) {
-                            console.error('Failed to save data or upload logo', error);
-                            alert(`حدث خطأ بعد رفع الفيديو: ${error.message}`);
-                            // Reset UI on error
-                            uploadText.textContent = 'رفع المحاضرة';
-                            uploadButton.disabled = false;
-                            uploadingStatus.classList.add('hidden');
-                        }
-                    }
-                );
-            } catch (error) {
-                console.error('Upload failed', error);
-                alert(`حدث خطأ أثناء رفع المحاضرة: ${error.message}`);
-                
-                // Reset UI in case of general error
-                uploadText.textContent = 'رفع المحاضرة';
-                uploadButton.disabled = false;
-                uploadingStatus.classList.add('hidden');
-            }
-        });
-    });
+// Import the functions from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+import { getDatabase, ref as dbRef, set, remove, get } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js";
+// Your Firebase configuration
+const firebaseConfig = {
+apiKey: 'AIzaSyBpwRyAO9Hd0y06AFxQP2VJqiwucD02kHE',
+appId: '1:728424288022:web:3fc8d5379263ca3b99ca37',
+messagingSenderId: '728424288022',
+projectId: 'e-learning-3aef4',
+authDomain: 'e-learning-3aef4.firebaseapp.com',
+databaseURL: 'https://e-learning-3aef4-default-rtdb.firebaseio.com',
+storageBucket: 'e-learning-3aef4.firebasestorage.app',
+measurementId: 'G-GTTZ690T29',
+};
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const storage = getStorage(app);
+document.addEventListener('DOMContentLoaded', () => {
+const titleInput = document.getElementById('title');
+const lectureNumberInput = document.getElementById('lectureNumber');
+const yearSelect = document.getElementById('year');
+const videoFileInput = document.getElementById('videoFile');
+const logoFileInput = document.getElementById('logoFile');
+const videoFileNameSpan = document.getElementById('videoFileName');
+const logoFileNameSpan = document.getElementById('logoFileName');
+const uploadButton = document.getElementById('uploadButton');
+const uploadingStatus = document.getElementById('uploadingStatus');
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
+const uploadText = document.getElementById('uploadText');
+// Deletion elements
+const deleteYearSelect = document.getElementById('deleteYear');
+const showDeleteButton = document.getElementById('showDeleteButton');
+const deleteModal = document.getElementById('deleteModal');
+const closeModal = document.querySelector('#deleteModal .close');
+const lecturesList = document.getElementById('lecturesList');
+// Update file name display
+videoFileInput.addEventListener('change', (event) => {
+const fileName = event.target.files[0] ? event.target.files[0].name : 'لم يتم اختيار فيديو';
+videoFileNameSpan.textContent = fileName;
+});
+logoFileInput.addEventListener('change', (event) => {
+const fileName = event.target.files[0] ? event.target.files[0].name : 'لم يتم اختيار شعار';
+logoFileNameSpan.textContent = fileName;
+});
+uploadButton.addEventListener('click', async () => {
+const title = titleInput.value.trim();
+const lectureNumber = lectureNumberInput.value.trim();
+const selectedYear = yearSelect.value;
+const videoFile = videoFileInput.files[0];
+const logoFile = logoFileInput.files[0];
+if (!title || !lectureNumber || !videoFile) {
+alert('يرجى إدخال جميع البيانات المطلوبة');
+return;
+}
+// Show uploading UI
+uploadText.textContent = 'جاري الرفع...';
+uploadButton.disabled = true;
+uploadingStatus.classList.remove('hidden');
+try {
+const lectureId = Date.now().toString();
+const baseName = `${lectureNumber}_${title.replace(/\s/g, '_')}`;
+// Upload video
+const videoStorageRef = storageRef(storage, `lectures_data/${selectedYear}/${baseName}.mp4`);
+const videoUploadTask = uploadBytesResumable(videoStorageRef, videoFile);
+videoUploadTask.on('state_changed',
+(snapshot) => {
+const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+progressBar.style.width = `${progress}%`;
+progressText.textContent = `جاري الرفع: ${Math.round(progress)}%`;
+},
+(error) => {
+console.error('Video upload failed', error);
+alert(`حدث خطأ أثناء رفع الفيديو: ${error.message}`);
+// Reset UI on error
+uploadText.textContent = 'رفع المحاضرة';
+uploadButton.disabled = false;
+uploadingStatus.classList.add('hidden');
+},
+async () => {
+try {
+const videoUrl = await getDownloadURL(videoUploadTask.snapshot.ref);
+// Upload logo (optional)
+let logoUrl = '';
+if (logoFile) {
+const logoStorageRef = storageRef(storage, `lectures_data/${selectedYear}/logos/${baseName}.jpg`);
+const logoUploadTask = uploadBytesResumable(logoStorageRef, logoFile);
+await logoUploadTask;
+logoUrl = await getDownloadURL(logoUploadTask.snapshot.ref);
+}
+// Save data to Realtime Database
+await set(dbRef(database, `lectures/${selectedYear}/${lectureId}`), {
+id: lectureId,
+title: title,
+lectureNumber: lectureNumber,
+year: selectedYear,
+videoUrl: videoUrl,
+logoUrl: logoUrl,
+timestamp: Date.now()
+});
+alert('تم رفع المحاضرة بنجاح!');
+// Reset form
+titleInput.value = '';
+lectureNumberInput.value = '';
+videoFileInput.value = '';
+logoFileInput.value = '';
+videoFileNameSpan.textContent = 'لم يتم اختيار فيديو';
+logoFileNameSpan.textContent = 'لم يتم اختيار شعار';
+// Reset UI
+uploadText.textContent = 'رفع المحاضرة';
+uploadButton.disabled = false;
+uploadingStatus.classList.add('hidden');
+} catch (error) {
+console.error('Failed to save data or upload logo', error);
+alert(`حدث خطأ بعد رفع الفيديو: ${error.message}`);
+// Reset UI on error
+uploadText.textContent = 'رفع المحاضرة';
+uploadButton.disabled = false;
+uploadingStatus.classList.add('hidden');
+}
+}
+);
+} catch (error) {
+console.error('Upload failed', error);
+alert(`حدث خطأ أثناء رفع المحاضرة: ${error.message}`);
+// Reset UI in case of general error
+uploadText.textContent = 'رفع المحاضرة';
+uploadButton.disabled = false;
+uploadingStatus.classList.add('hidden');
+}
+});
+// ** DELETE LECTURE LOGIC **
+showDeleteButton.addEventListener('click', async () => {
+const selectedYear = deleteYearSelect.value;
+lecturesList.innerHTML = '';
+try {
+const snapshot = await get(dbRef(database, `lectures/${selectedYear}`));
+if (snapshot.exists()) {
+const lectures = snapshot.val();
+Object.keys(lectures).forEach(lectureId => {
+const lecture = lectures[lectureId];
+const li = document.createElement('li');
+li.className = 'delete-list-item';
+li.innerHTML = `
+<span>${lecture.lectureNumber} - ${lecture.title}</span>
+<button onclick="deleteLecture('${selectedYear}', '${lectureId}', '${lecture.videoUrl}', '${lecture.logoUrl || ''}')">حذف</button>
+`;
+lecturesList.appendChild(li);
+});
+deleteModal.style.display = 'block';
+} else {
+alert('لا توجد محاضرات في هذه السنة الدراسية.');
+}
+} catch (error) {
+console.error("Error fetching lectures:", error);
+alert("حدث خطأ أثناء تحميل قائمة المحاضرات.");
+}
+});
+closeModal.onclick = function() {
+deleteModal.style.display = 'none';
+}
+window.onclick = function(event) {
+if (event.target == deleteModal) {
+deleteModal.style.display = 'none';
+}
+}
+window.deleteLecture = async function(year, lectureId, videoUrl, logoUrl) {
+const confirmDelete = confirm('هل أنت متأكد من حذف هذه المحاضرة؟');
+if (!confirmDelete) return;
+try {
+// Delete from Realtime Database
+await remove(dbRef(database, `lectures/${year}/${lectureId}`));
+// Delete from Storage
+const videoStorageRef = storageRef(storage, videoUrl);
+await deleteObject(videoStorageRef);
+if (logoUrl && logoUrl.length > 0) {
+const logoStorageRef = storageRef(storage, logoUrl);
+await deleteObject(logoStorageRef);
+}
+alert('تم حذف المحاضرة بنجاح!');
+deleteModal.style.display = 'none';
+// Reload the lecture list
+showDeleteButton.click();
+} catch (error) {
+console.error("Error deleting lecture:", error);
+alert("حدث خطأ أثناء حذف المحاضرة. قد لا يكون الملف موجودًا بالفعل.");
+}
+}
+});
 </script>
-
 </body>
 </html>
