@@ -388,6 +388,12 @@
         <div class="container header-content">
             <div class="logo">CATALYST MANAGEMENT</div>
             <div class="header-buttons">
+                <a href="move_lec.html" class="header-btn" style="background-color: #F39C12;">
+                    <i class="fas fa-exchange-alt"></i> نقل المحاضرات
+                </a>
+                <a href="manage_monthes.html" class="header-btn" style="background-color: #3498DB;">
+                    <i class="fas fa-calendar-alt"></i> إدارة الشهور
+                </a>
                 <a href="exam_degrees.html" class="header-btn">
                     <i class="fas fa-list-alt"></i> نتائج الامتحانات
                 </a>
@@ -582,8 +588,14 @@
 
         // دالة تسجيل الخروج
         function logout() {
-            window.location.href = 'index.html';
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            }).catch(error => {
+                console.error("Logout Error:", error);
+                showAlert('حدث خطأ أثناء تسجيل الخروج', 'danger');
+            });
         }
+
 
         // تحويل الطابع الزمني إلى تنسيق تاريخ ووقت محلي
         function formatTimestamp(timestamp) {
@@ -681,7 +693,7 @@
             if (Object.keys(updates).length > 0) {
                 try {
                     await database.ref().update(updates);
-                    showAlert('تم تعطيل بعض الحسابات تلقائيًا لانتهاء صلاحيتها.', 'success');
+                    // لا نعرض تنبيه هنا بل نعتمد على loadUsers لإعادة التحميل بعد التحديث
                 } catch (error) {
                     console.error('Error auto-disabling accounts:', error);
                 }
@@ -735,8 +747,10 @@
             const disableTimestamp = user.disableTimestamp;
             if (disableTimestamp) {
                 const date = new Date(disableTimestamp);
+                // تنسيق التاريخ والوقت ليتناسب مع حقول الإدخال
                 const localDate = date.toISOString().split('T')[0];
                 const localTime = date.toTimeString().split(' ')[0].substring(0, 5);
+                
                 document.getElementById('edit-disable-date').value = localDate;
                 document.getElementById('edit-disable-time').value = localTime;
             } else {
@@ -764,6 +778,7 @@
             let disableTimestamp = null;
             if (newDate && newTime) {
                 const dateTimeString = `${newDate}T${newTime}:00`;
+                // استخدام getTime() لتحويله إلى طابع زمني بالمللي ثانية
                 disableTimestamp = new Date(dateTimeString).getTime();
             }
 
@@ -870,7 +885,7 @@
 
             try {
                 await database.ref(`users/${userId}`).update({
-                    deviceId: null,
+                    deviceId: null, // مسح الجهاز لإجباره على تسجيل الدخول مرة أخرى
                 });
                 showAlert('تم تسجيل خروج العضو بنجاح.', 'success');
                 closeModal('force-logout-modal');
@@ -929,8 +944,8 @@
             try {
                 const updates = {};
                 updates['isDisabled'] = newStatus;
-                if (!newStatus) { // إذا تم تفعيل الحساب، قم بمسح وقت التعطيل
-                    updates['disableTimestamp'] = null;
+                if (!newStatus) { // إذا تم تفعيل الحساب، قم بمسح التعطيل اليدوي
+                    updates['isDisabled'] = false;
                 }
                 
                 await database.ref(`users/${userId}`).update(updates);
@@ -983,7 +998,11 @@
         document.querySelectorAll('.close-modal, .close-modal-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                closeModal(e.target.closest('.modal').id);
+                // التأكد من أننا نغلق النافذة المنبثقة الصحيحة
+                const modalElement = e.target.closest('.modal');
+                if(modalElement) {
+                    closeModal(modalElement.id);
+                }
             });
         });
         document.getElementById('user-search').addEventListener('input', () => {
@@ -991,8 +1010,16 @@
             searchTimeout = setTimeout(filterUsers, 300);
         });
 
-        // تحميل الأعضاء عند تحميل الصفحة
-        window.onload = loadUsers;
+        // التحقق من حالة المصادقة عند تحميل الصفحة
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                // إذا لم يكن هناك مستخدم مسجل دخول، عد إلى صفحة تسجيل الدخول
+                window.location.href = 'index.html';
+            } else {
+                // إذا كان المستخدم مسجل دخول، قم بتحميل الأعضاء
+                window.onload = loadUsers;
+            }
+        });
     </script>
 </body>
 </html>

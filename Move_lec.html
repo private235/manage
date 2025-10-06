@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المحاضرات بالسحب والإفلات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6C5CE7;
+            --secondary-color: #A29BFE;
+            --dark-color: #2D3436;
+            --light-color: #F5F6FA;
+            --accent-color: #00CE9F;
+            --danger-color: #E74C3C;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+
+        /* حاوية الفلترة */
+        .filter-panel {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 300px;
+            max-width: 100%;
+        }
+        
+        /* الحاوية الرئيسية */
+        .main-content {
+            display: flex;
+            gap: 20px;
+            min-height: 70vh;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* قائمة المحاضرات غير المصنفة */
+        .lecture-list-panel {
+            flex: 1;
+            background-color: #f0f0f5;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            min-width: 300px;
+            max-height: 85vh;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 5px;
+        }
+
+        /* حاويات الشهور */
+        .months-container {
+            flex: 3;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .month-column {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            min-height: 200px;
+            border: 2px dashed transparent;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        
+        /* تصميم الإفلات النشط */
+        .drag-over {
+            background-color: #e6e0ff !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        /* تصميم المحاضرة القابلة للسحب */
+        .lecture-item {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: grab;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            font-weight: 500;
+            border-right: 4px solid var(--accent-color);
+            transition: opacity 0.2s;
+        }
+
+        /* عند السحب */
+        .is-dragging {
+            opacity: 0.4;
+            border-color: var(--primary-color);
+            border-style: solid;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 20px 0;
+            font-size: 14px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+
+    <h2 class="header">إدارة المحاضرات بالسحب والإفلات بين الشهور</h2>
+    <div id="alert-message"></div>
+
+    <div class="filter-panel">
+        <label for="year-selector" style="font-weight: 700; display: block; margin-bottom: 5px;">اختر المرحلة الدراسية:</label>
+        <select id="year-selector" class="form-select">
+            <option value="" disabled selected>--- اختر مرحلة ---</option>
+            <option value="first">أولى</option>
+            <option value="second_chemistry">ثانية كيمياء</option>
+            <option value="second_physics">ثانية فيزياء</option>
+            <option value="third">ثالثة</option>
+        </select>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="lecture-list-panel" id="uncategorized-container">
+            <div class="panel-title">المحاضرات غير المصنفة</div>
+            <div id="uncategorized-lectures" class="month-column" data-month-id="uncategorized">
+                 <div class="empty-state">الرجاء اختيار مرحلة أولاً...</div>
+            </div>
+        </div>
+
+        <div class="months-container" id="months-container">
+            <div class="empty-state">
+                <p>سيتم عرض الشهور هنا بعد اختيار المرحلة الدراسية.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+
+    <script>
+        // ==========================================================
+        // ========== تهيئة وإعداد Firebase والثوابت ==========
+        // ==========================================================
+        
+        // **تعديل: يجب استبدال هذا التكوين بمعلومات مشروعك الحقيقية**
+        const firebaseConfig = {
+            apiKey: 'AIzaSyBpwRyAO9Hd0y06AFxQP2VJqiwucD02kHE',
+            appId: '1:728424288022:web:3fc8d5379263ca3b99ca37',
+            messagingSenderId: '728424288022',
+            projectId: 'e-learning-3aef4',
+            authDomain: 'e-learning-3aef4.firebaseapp.com',
+            databaseURL: 'https://e-learning-3aef4-default-rtdb.firebaseio.com',
+            storageBucket: 'e-learning-3aef4.firebasestorage.app',
+            measurementId: 'G-GTTZ690T29',
+        };
+        
+        if (!firebase.apps.length) {
+             firebase.initializeApp(firebaseConfig);
+        }
+
+        const database = firebase.database();
+        const monthsRef = database.ref('months');
+        const lecturesRef = database.ref('lecturess'); // المسار الرئيسي للمحاضرات
+
+        const yearSelector = document.getElementById('year-selector');
+        const monthsContainer = document.getElementById('months-container');
+        const uncategorizedContainer = document.getElementById('uncategorized-lectures');
+        const alertMessageDiv = document.getElementById('alert-message');
+
+        let currentYearKey = null;
+        let allMonthsData = {}; // {monthId: {name: 'الاسم', order: 1}}
+        let allLecturesData = {}; // {monthId: {lectureId: {data}}}
+
+        const yearKeysDisplayMap = {
+            'first': 'أولى',
+            'second_chemistry': 'ثانية كيمياء',
+            'second_physics': 'ثانية فيزياء',
+            'third': 'ثالثة'
+        };
+
+        function showAlert(message, type = 'success') {
+            alertMessageDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertMessageDiv.innerHTML = '';
+            }, 5000);
+        }
+        
+        // ==========================================================
+        // ========== وظائف جلب وعرض البيانات ==========
+        // ==========================================================
+        
+        yearSelector.addEventListener('change', fetchDataAndRender);
+
+        async function fetchDataAndRender() {
+            currentYearKey = yearSelector.value;
+            if (!currentYearKey) return;
+
+            monthsContainer.innerHTML = `<div class="empty-state"><span class="loading-spinner"></span> جاري تحميل الشهور والمحاضرات...</div>`;
+            uncategorizedContainer.innerHTML = '';
+
+            try {
+                // 1. جلب الشهور المتاحة للسنة
+                const monthSnapshot = await monthsRef.child(currentYearKey).once('value');
+                const rawMonths = monthSnapshot.val() || {};
+                
+                // تحويل الشهور إلى مصفوفة مرتبة
+                allMonthsData = Object.entries(rawMonths).map(([id, data]) => ({ id, ...data }));
+                allMonthsData.sort((a, b) => (a.order || 999) - (b.order || 999));
+
+                // 2. جلب جميع المحاضرات للسنة
+                const lectureSnapshot = await lecturesRef.child(currentYearKey).once('value');
+                allLecturesData = lectureSnapshot.val() || {};
+
+                // 3. العرض
+                renderMonths();
+                renderLectures();
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                showAlert(`🚫 فشل تحميل البيانات: ${error.message}`, 'danger');
+                monthsContainer.innerHTML = `<div class="empty-state" style="color: var(--danger-color);">فشل تحميل البيانات.</div>`;
+            }
+        }
+
+        function renderMonths() {
+            if (allMonthsData.length === 0) {
+                monthsContainer.innerHTML = `<div class="empty-state">لا توجد شهور/وحدات مُضافة لهذه السنة.</div>`;
+                return;
+            }
+
+            monthsContainer.innerHTML = allMonthsData.map(month => `
+                <div class="month-column" data-month-id="${month.id}">
+                    <div class="panel-title">${month.name || 'شهر غير مسمى'} (ترتيب: ${month.order || '?'})</div>
+                    <div id="month-${month.id}-lectures">
+                        </div>
+                </div>
+            `).join('');
+            
+            // إضافة مستمعي أحداث السحب والإفلات لجميع الشهور
+            document.querySelectorAll('.month-column').forEach(column => {
+                column.addEventListener('dragover', handleDragOver);
+                column.addEventListener('dragleave', handleDragLeave);
+                column.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function renderLectures() {
+            // مسح جميع الحاويات أولاً
+            allMonthsData.forEach(month => {
+                const container = document.getElementById(`month-${month.id}-lectures`);
+                if (container) container.innerHTML = '';
+            });
+            uncategorizedContainer.innerHTML = '';
+
+            let hasLectures = false;
+
+            // تمرير على مفاتيح المحاضرات في مسار السنة
+            Object.entries(allLecturesData).forEach(([monthIdOrLectureId, data]) => {
+                if (typeof data !== 'object' || data === null) return;
+
+                // التحقق مما إذا كانت العقدة هي شهر (تحتوي على محاضرات بداخلها)
+                const isMonthContainer = allMonthsData.some(m => m.id === monthIdOrLectureId);
+                
+                if (isMonthContainer) {
+                    // المحاضرات داخل شهر مصنف
+                    const lecturesInMonth = data;
+                    const containerId = `month-${monthIdOrLectureId}-lectures`;
+                    const container = document.getElementById(containerId);
+                    
+                    if (container) {
+                        const lectureList = Object.entries(lecturesInMonth)
+                            .map(([lectureId, lectureData]) => ({ lectureId, ...lectureData }))
+                            .sort((a, b) => (a.order || 999) - (b.order || 999));
+                            
+                        container.innerHTML = lectureList.map(lec => createLectureItem(lec.lectureId, lec, monthIdOrLectureId)).join('');
+                        if (lectureList.length > 0) hasLectures = true;
+                    }
+                } else {
+                    // المحاضرة غير مصنفة (موجودة مباشرة تحت مفتاح السنة)
+                    const lectureId = monthIdOrLectureId;
+                    const lectureData = data;
+                    
+                    if (!lectureData.title) return; // تجاهل العقد الفارغة أو غير المتوقعة
+                    
+                    uncategorizedContainer.innerHTML += createLectureItem(lectureId, lectureData, 'uncategorized');
+                    hasLectures = true;
+                }
+            });
+
+            // رسائل حالة فارغة
+            if (!hasLectures) {
+                uncategorizedContainer.innerHTML = `<div class="empty-state">لا توجد محاضرات في هذه المرحلة الدراسية.</div>`;
+            } else if (uncategorizedContainer.innerHTML === '') {
+                 uncategorizedContainer.innerHTML = `<div class="empty-state">لا توجد محاضرات غير مصنفة.</div>`;
+            }
+        }
+        
+        function createLectureItem(id, data, parentMonthId) {
+            return `
+                <div class="lecture-item" 
+                     draggable="true" 
+                     data-lecture-id="${id}" 
+                     data-current-month-id="${parentMonthId}"
+                     data-lecture-title="${data.title || 'محاضرة بدون عنوان'}">
+                    ${data.title || 'محاضرة بدون عنوان'} (#${data.order || '?'})
+                </div>
+            `;
+        }
+        
+        // ==========================================================
+        // ========== وظائف السحب والإفلات (Drag and Drop) ==========
+        // ==========================================================
+        
+        let draggedLecture = null;
+
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('lecture-item')) {
+                draggedLecture = e.target;
+                e.dataTransfer.setData('text/plain', e.target.dataset.lectureId);
+                e.target.classList.add('is-dragging');
+            }
+        });
+
+        document.addEventListener('dragend', (e) => {
+            if (e.target === draggedLecture) {
+                e.target.classList.remove('is-dragging');
+                draggedLecture = null;
+            }
+        });
+
+        function handleDragOver(e) {
+            e.preventDefault(); // السماح بالإفلات
+            if (e.target.classList.contains('month-column')) {
+                e.target.classList.add('drag-over');
+            } else if (e.target.closest('.month-column')) {
+                 e.target.closest('.month-column').classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            if (e.target.classList.contains('month-column')) {
+                e.target.classList.remove('drag-over');
+            } else if (e.target.closest('.month-column')) {
+                 e.target.closest('.month-column').classList.remove('drag-over');
+            }
+        }
+
+        async function handleDrop(e) {
+            e.preventDefault();
+            
+            // تحديد حاوية الإفلات
+            let dropTarget = e.target.closest('.month-column');
+            if (!dropTarget) return; 
+
+            dropTarget.classList.remove('drag-over');
+            
+            const newMonthId = dropTarget.dataset.monthId;
+            const lectureId = e.dataTransfer.getData('text/plain');
+            
+            if (!lectureId || !draggedLecture) {
+                showAlert('خطأ في بيانات المحاضرة.', 'danger');
+                return;
+            }
+            
+            const oldMonthId = draggedLecture.dataset.currentMonthId;
+            const lectureTitle = draggedLecture.dataset.lectureTitle;
+
+            if (oldMonthId === newMonthId) {
+                showAlert('المحاضرة موجودة بالفعل في هذا الشهر.', 'danger');
+                return;
+            }
+            
+            // 1. نقل العنصر في الواجهة مباشرة لسرعة الاستجابة
+            const targetContainer = dropTarget.querySelector(`#month-${newMonthId}-lectures`) || dropTarget;
+            targetContainer.appendChild(draggedLecture);
+            draggedLecture.dataset.currentMonthId = newMonthId;
+            
+            // 2. تحديث Firebase
+            await updateLectureLocation(lectureId, oldMonthId, newMonthId, lectureTitle);
+        }
+        
+        // ==========================================================
+        // ========== وظيفة تحديث قاعدة البيانات ==========
+        // ==========================================================
+        
+        async function updateLectureLocation(lectureId, oldMonthId, newMonthId, lectureTitle) {
+            if (!currentYearKey) return;
+
+            const isMovingFromUncategorized = oldMonthId === 'uncategorized';
+            const isMovingToUncategorized = newMonthId === 'uncategorized';
+
+            // تحديد مسارات القراءة والكتابة والحذف
+            const oldPath = isMovingFromUncategorized 
+                            ? `${currentYearKey}/${lectureId}` // المحاضرة مباشرة تحت السنة
+                            : `${currentYearKey}/${oldMonthId}/${lectureId}`; // المحاضرة تحت شهر
+                            
+            const newPath = isMovingToUncategorized
+                            ? `${currentYearKey}/${lectureId}` // المحاضرة مباشرة تحت السنة
+                            : `${currentYearKey}/${newMonthId}/${lectureId}`; // المحاضرة تحت شهر
+
+            showAlert(`جاري نقل المحاضرة "${lectureTitle}"...`, 'success');
+
+            try {
+                // 1. قراءة بيانات المحاضرة من الموقع القديم
+                const snapshot = await lecturesRef.child(oldPath).once('value');
+                const lectureData = snapshot.val();
+
+                if (!lectureData) {
+                    throw new Error('بيانات المحاضرة القديمة غير موجودة.');
+                }
+                
+                // 2. تحديث/إنشاء بيانات المحاضرة في الموقع الجديد
+                await lecturesRef.child(newPath).set(lectureData);
+
+                // 3. حذف المحاضرة من الموقع القديم
+                await lecturesRef.child(oldPath).remove();
+
+                showAlert(`✅ تم نقل المحاضرة "${lectureTitle}" بنجاح!`, 'success');
+                
+                // إعادة تحميل الواجهة لضمان تحديث حالة "لا توجد محاضرات"
+                fetchDataAndRender();
+
+            } catch (error) {
+                console.error('Firebase Update Error:', error);
+                showAlert(`🚫 فشل النقل: ${error.message}. (تم التراجع عن النقل في الواجهة، يرجى التحقق من Firebase)`, 'danger');
+                
+                // في حالة فشل Firebase، قد تحتاج إلى إعادة العنصر لمكانه القديم في الواجهة
+                // ولكن لتجنب التعقيد، نكتفي برسالة الخطأ ونعتمد على المستخدم لتحديث الصفحة إذا لزم الأمر
+            }
+        }
+        
+        // جلب البيانات الأولية (لمنع ظهور خطأ في الكونسول)
+        // لا نحتاج لطلب البيانات عند التحميل، بل ننتظر اختيار السنة.
+    </script>
+</body>
+</html>
