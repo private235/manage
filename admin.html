@@ -417,7 +417,7 @@
             </div>
 
             <div class="search-container">
-                <input type="text" id="user-search" placeholder="ابحث عن طالب بالاسم أو البريد الإلكتروني...">
+                <input type="text" id="user-search" placeholder="ابحث عن طالب بالبريد الإلكتروني أو السنة الدراسية...">
             </div>
 
             <div id="alert-message"></div>
@@ -589,7 +589,9 @@
         // دالة تسجيل الخروج
         function logout() {
             auth.signOut().then(() => {
-                window.location.href = 'index.html';
+                // يمكنك توجيه المستخدم لصفحة معينة بعد الخروج إذا أردت
+                showAlert('تم تسجيل الخروج بنجاح.', 'success');
+                // window.location.href = 'index.html'; // تم إلغاء التفعيل
             }).catch(error => {
                 console.error("Logout Error:", error);
                 showAlert('حدث خطأ أثناء تسجيل الخروج', 'danger');
@@ -634,7 +636,6 @@
                 
                 const deviceId = user.deviceId || 'غير معروف';
                 const userYear = user.year || 'غير محدد';
-                const password = user.password || 'غير محدد';
                 const disableDate = disableTimestamp ? formatTimestamp(disableTimestamp) : 'غير محدد';
 
                 const userCard = document.createElement('div');
@@ -642,7 +643,6 @@
                 userCard.innerHTML = `
                     <div class="user-info">
                         <div class="user-email">البريد الإلكتروني: ${user.email || 'غير معروف'}</div>
-                        <div class="user-detail">كلمة السر: ${password}</div>
                         <div class="user-detail">معرف الجهاز: ${deviceId}</div>
                         <div class="user-detail">
                             السنة الدراسية: <span class="year-display">${userYear}</span>
@@ -693,7 +693,6 @@
             if (Object.keys(updates).length > 0) {
                 try {
                     await database.ref().update(updates);
-                    // لا نعرض تنبيه هنا بل نعتمد على loadUsers لإعادة التحميل بعد التحديث
                 } catch (error) {
                     console.error('Error auto-disabling accounts:', error);
                 }
@@ -714,7 +713,7 @@
                     displayUsers(allUsersData);
                 });
             }).catch(error => {
-                usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>حدث خطأ في تحميل الأعضاء</p></div>';
+                usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><p>حدث خطأ في تحميل الأعضاء. قد تحتاج إلى صلاحيات للوصول.</p></div>';
                 console.error('Error loading users:', error);
                 showAlert('حدث خطأ في تحميل بيانات الأعضاء', 'danger');
             });
@@ -747,7 +746,6 @@
             const disableTimestamp = user.disableTimestamp;
             if (disableTimestamp) {
                 const date = new Date(disableTimestamp);
-                // تنسيق التاريخ والوقت ليتناسب مع حقول الإدخال
                 const localDate = date.toISOString().split('T')[0];
                 const localTime = date.toTimeString().split(' ')[0].substring(0, 5);
                 
@@ -778,7 +776,6 @@
             let disableTimestamp = null;
             if (newDate && newTime) {
                 const dateTimeString = `${newDate}T${newTime}:00`;
-                // استخدام getTime() لتحويله إلى طابع زمني بالمللي ثانية
                 disableTimestamp = new Date(dateTimeString).getTime();
             }
 
@@ -971,7 +968,7 @@
 
         // ربط الأحداث بالأزرار
         function attachButtonListeners() {
-            document.querySelectorAll('.btn-edit').forEach(button => {
+            document.querySelectorAll('.edit-user-btn').forEach(button => {
                 button.addEventListener('click', openEditUserModal);
             });
             document.querySelectorAll('.clear-device-btn').forEach(button => {
@@ -995,32 +992,25 @@
         document.getElementById('confirm-force-logout-btn').addEventListener('click', forceLogoutUser);
         document.getElementById('confirm-delete-btn').addEventListener('click', deleteUser);
         document.getElementById('confirm-toggle-btn').addEventListener('click', toggleUserStatus);
+        
         document.querySelectorAll('.close-modal, .close-modal-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // التأكد من أننا نغلق النافذة المنبثقة الصحيحة
                 const modalElement = e.target.closest('.modal');
                 if(modalElement) {
                     closeModal(modalElement.id);
                 }
             });
         });
+        
         document.getElementById('user-search').addEventListener('input', () => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(filterUsers, 300);
         });
 
-        // التحقق من حالة المصادقة عند تحميل الصفحة
-        auth.onAuthStateChanged(user => {
-            if (!user) {
-                // إذا لم يكن هناك مستخدم مسجل دخول، عد إلى صفحة تسجيل الدخول
-                window.location.href = 'index.html';
-            } else {
-                // إذا كان المستخدم مسجل دخول، قم بتحميل الأعضاء
-                window.onload = loadUsers;
-            }
-        });
+        // ** التعديل: استدعاء دالة تحميل الأعضاء مباشرة عند تحميل الصفحة **
+        document.addEventListener('DOMContentLoaded', loadUsers);
+
     </script>
 </body>
-
 </html>
