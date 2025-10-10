@@ -924,6 +924,10 @@
             }
         }
 
+        // ========================================================== //
+        // ============== الكود الذي تم تعديله هنا =================== //
+        // ========================================================== //
+
         // تعطيل/تفعيل الحساب
         async function toggleUserStatus() {
             const userId = document.getElementById('toggle-user-id').value;
@@ -939,17 +943,22 @@
             confirmBtn.disabled = true;
 
             try {
-                const updates = {};
-                updates['isDisabled'] = newStatus;
-                if (!newStatus) { // إذا تم تفعيل الحساب، قم بمسح التعطيل اليدوي
-                    updates['isDisabled'] = false;
+                // إنشاء كائن التحديثات
+                const updates = {
+                    isDisabled: newStatus
+                };
+                
+                // ** ✨ الإصلاح:  إذا كنا نقوم بتفعيل الحساب (newStatus is false) **
+                // ** يجب مسح قيمة وقت التعطيل لمنعه من التعطيل التلقائي مرة أخرى **
+                if (!newStatus) {
+                    updates['disableTimestamp'] = null;
                 }
                 
                 await database.ref(`users/${userId}`).update(updates);
                 
                 showAlert(`تم ${newStatus ? 'تعطيل' : 'تفعيل'} الحساب بنجاح.`, 'success');
                 closeModal('toggle-status-modal');
-                loadUsers();
+                loadUsers(); // إعادة تحميل المستخدمين لعرض الحالة الجديدة
             } catch (error) {
                 console.error('Error toggling user status:', error);
                 showAlert(`حدث خطأ أثناء ${newStatus ? 'تعطيل' : 'تفعيل'} الحساب.`, 'danger');
@@ -959,6 +968,11 @@
                 confirmBtn.disabled = false;
             }
         }
+
+        // ========================================================== //
+        // ================= نهاية الكود المعدل ===================== //
+        // ========================================================== //
+
 
         // إغلاق النوافذ المنبثقة
         function closeModal(modalId) {
