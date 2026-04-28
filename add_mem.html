@@ -1,271 +1,494 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إضافة عضو جديد</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #6C5CE7;
-            --secondary-color: #A29BFE;
-            --dark-color: #2D3436;
-            --light-color: #F5F6FA;
-            --accent-color: #00CE9F;
-            --danger-color: #E74C3C;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إضافة طالب جديد وتفعيل الشهور</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+--primary-color: #6C5CE7;
+--secondary-color: #A29BFE;
+--dark-color: #2D3436;
+--light-color: #F5F6FA;
+--accent-color: #00CE9F;
+--danger-color: #E74C3C;
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Tajawal', sans-serif;
-        }
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Tajawal', sans-serif;
+}
 
-        body {
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+body {
+background-color: var(--light-color);
+color: var(--dark-color);
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+}
 
-        .container {
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
+.container {
+width: 100%;
+max-width: 600px;
+padding: 30px;
+background-color: white;
+border-radius: 15px;
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
 
-        .form-title {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 24px;
-            color: var(--primary-color);
-        }
+.form-title {
+font-size: 26px;
+font-weight: bold;
+text-align: center;
+margin-bottom: 24px;
+color: var(--primary-color);
+}
 
-        .form-group {
-            margin-bottom: 16px;
-        }
+.form-group {
+margin-bottom: 16px;
+}
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
+.form-group label {
+display: block;
+margin-bottom: 8px;
+font-weight: 700;
+color: var(--dark-color);
+}
 
-        .form-control, .form-select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            color: var(--dark-color);
-            background-color: var(--light-color);
-        }
-        
-        input[type="date"],
-        input[type="time"] {
-            font-family: 'Tajawal', sans-serif;
-        }
+.form-control, .form-select {
+width: 100%;
+padding: 12px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 16px;
+color: var(--dark-color);
+background-color: var(--light-color);
+transition: border-color 0.3s;
+}
 
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background-color: var(--primary-color);
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+.form-control:focus, .form-select:focus {
+border-color: var(--primary-color);
+outline: none;
+}
 
-        .btn:hover {
-            background-color: #5a4bce;
-        }
-        
-        .btn:disabled {
-            background-color: #A29BFE;
-            cursor: not-allowed;
-        }
+/* تنسيق قسم تفعيل الشهور */
+.month-selection {
+border: 1px solid #ddd;
+padding: 15px;
+border-radius: 10px;
+margin-top: 20px;
+background-color: #f9f9f9;
+}
 
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #fff;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+.month-selection h4 {
+color: var(--primary-color);
+font-weight: 700;
+margin-bottom: 15px;
+border-bottom: 2px solid var(--secondary-color);
+padding-bottom: 5px;
+}
 
-        .alert {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-weight: 500;
-        }
+.month-item {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 10px;
+padding: 5px 0;
+border-bottom: 1px dashed #eee;
+}
 
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
+.month-item:last-child {
+border-bottom: none;
+}
 
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-    </style>
+.month-item input[type="checkbox"] {
+margin-left: 10px;
+width: 20px;
+height: 20px;
+accent-color: var(--primary-color);
+}
+
+.month-item label {
+margin: 0;
+font-weight: 500;
+flex-grow: 1;
+cursor: pointer;
+}
+
+.days-control-group {
+display: flex;
+align-items: center;
+}
+
+.days-input {
+width: 70px;
+padding: 5px 8px;
+border: 1px solid #ccc;
+border-radius: 5px;
+text-align: center;
+font-size: 14px;
+margin-right: 5px;
+}
+
+
+.btn {
+width: 100%;
+padding: 14px;
+border: none;
+border-radius: 8px;
+background-color: var(--primary-color);
+color: white;
+font-size: 18px;
+font-weight: bold;
+cursor: pointer;
+transition: background-color 0.3s, opacity 0.3s;
+margin-top: 20px;
+}
+
+.btn:hover:not(:disabled) {
+background-color: #5a4bce;
+}
+
+.btn:disabled {
+background-color: var(--secondary-color);
+opacity: 0.7;
+cursor: not-allowed;
+}
+
+.loading-spinner {
+border: 4px solid rgba(255, 255, 255, 0.3);
+border-top: 4px solid #fff;
+border-radius: 50%;
+width: 24px;
+height: 24px;
+animation: spin 1s linear infinite;
+display: inline-block;
+}
+
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+
+.alert {
+padding: 12px;
+border-radius: 8px;
+margin-bottom: 16px;
+font-weight: 500;
+text-align: right;
+}
+
+.alert-success {
+background-color: #d4edda;
+color: #155724;
+border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+background-color: #f8d7da;
+color: #721c24;
+border: 1px solid #f5c6cb;
+}
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <h2 class="form-title">إضافة عضو جديد</h2>
-        <div id="alert-message"></div>
+<div class="container">
+<h2 class="form-title">إضافة طالب وتفعيل الشهور</h2>
+<div id="alert-message"></div>
 
-        <div class="form-group">
-            <label for="username">اسم المستخدم</label>
-            <input type="text" id="username" class="form-control" placeholder="أدخل اسم المستخدم">
-        </div>
-        <div class="form-group">
-            <label for="password">كلمة المرور</label>
-            <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور">
-        </div>
-        <div class="form-group">
-            <label for="year">السنة الدراسية</label>
-            <select id="year" class="form-select">
-                <option value="">اختر السنة</option>
-                <option value="أولى">أولى</option>
-                <option value="ثانية كيمياء">ثانية كيمياء</option>
-                <option value="ثانية فيزياء">ثانية فيزياء</option>
-                <option value="ثالثة">ثالثة</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="disable-date">تاريخ التعطيل (اختياري)</label>
-            <input type="date" id="disable-date" class="form-control">
-        </div>
-        <div class="form-group">
-            <label for="disable-time">وقت التعطيل (اختياري)</label>
-            <input type="time" id="disable-time" class="form-control">
-        </div>
-        <button id="add-member-btn" class="btn">إضافة العضو</button>
-    </div>
+<div class="form-group">
+<label for="username">اسم المستخدم (يصبح جزء من البريد الإلكتروني)</label>
+<input type="text" id="username" class="form-control" placeholder="أدخل اسم المستخدم (مثال: ahmed_ali)">
+</div>
+<div class="form-group">
+<label for="password">كلمة المرور</label>
+<input type="password" id="password" class="form-control" placeholder="يجب أن تكون 6 أحرف على الأقل">
+</div>
+<div class="form-group">
+<label for="year">السنة الدراسية</label>
+<select id="year" class="form-select">
+<option value="" disabled selected>اختر السنة</option>
+<option value="first">أولى</option>
+<option value="second_chemistry">ثانية كيمياء</option>
+<option value="second_physics">ثانية فيزياء</option>
+<option value="third">ثالثة</option>
+</select>
+</div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+<div class="month-selection">
+<h4>تفعيل الشهور/الوحدات وتحديد مدة الوصول (بالأيام):</h4>
+<div id="months-list">
+<p style="text-align: center; color: #555;">الرجاء اختيار السنة أولاً...</p>
+</div>
+</div>
 
-    <script>
-        // تهيئة Firebase
-        const firebaseConfig = {
-            apiKey: 'AIzaSyBpwRyAO9Hd0y06AFxQP2VJqiwucD02kHE',
-            appId: '1:728424288022:web:3fc8d5379263ca3b99ca37',
-            messagingSenderId: '728424288022',
-            projectId: 'e-learning-3aef4',
-            authDomain: 'e-learning-3aef4.firebaseapp.com',
-            databaseURL: 'https://e-learning-3aef4-default-rtdb.firebaseio.com',
-            storageBucket: 'e-learning-3aef4.firebasestorage.app',
-            measurementId: 'G-GTTZ690T29',
-        };
-        firebase.initializeApp(firebaseConfig);
+<div class="form-group" style="margin-top: 20px;">
+<label for="disable-date">تاريخ التعطيل الشامل للطالب (اختياري)</label>
+<input type="date" id="disable-date" class="form-control">
+</div>
+<div class="form-group">
+<label for="disable-time">وقت التعطيل الشامل للطالب (اختياري)</label>
+<input type="time" id="disable-time" class="form-control">
+</div>
 
-        const auth = firebase.auth();
-        const database = firebase.database();
-        const usersRef = database.ref('users');
+<button id="add-member-btn" class="btn">إضافة الطالب وتفعيل الشهور</button>
+</div>
 
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const yearSelect = document.getElementById('year');
-        const disableDateInput = document.getElementById('disable-date');
-        const disableTimeInput = document.getElementById('disable-time');
-        const addMemberBtn = document.getElementById('add-member-btn');
-        const alertMessageDiv = document.getElementById('alert-message');
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
 
-        const yearDomains = {
-            'أولى': '@first.com',
-            'ثانية كيمياء': '@chem.com',
-            'ثانية فيزياء': '@phys.com',
-            'ثالثة': '@third.com'
-        };
+<script>
+// Firebase تم تهيئته في auth-guard.js
+const auth = firebase.auth();
+const database = firebase.database();
+const usersRef = database.ref('users');
+const monthsRef = database.ref('months');
+const studentAccessRef = database.ref('student_month_access');
 
-        function showAlert(message, type = 'success') {
-            alertMessageDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => {
-                alertMessageDiv.innerHTML = '';
-            }, 5000);
-        }
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const yearSelect = document.getElementById('year');
+const disableDateInput = document.getElementById('disable-date');
+const disableTimeInput = document.getElementById('disable-time');
+const addMemberBtn = document.getElementById('add-member-btn');
+const alertMessageDiv = document.getElementById('alert-message');
+const monthsListDiv = document.getElementById('months-list');
 
-        async function addMember() {
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
-            const year = yearSelect.value;
-            const disableDate = disableDateInput.value;
-            const disableTime = disableTimeInput.value;
-            
-            if (!username || !password || !year) {
-                showAlert('الرجاء إدخال جميع البيانات الإلزامية', 'danger');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showAlert('يجب أن تكون كلمة المرور 6 أحرف على الأقل', 'danger');
-                return;
-            }
+// خريطة لتحديد الدومين (لتحويل اسم المستخدم إلى بريد إلكتروني صالح لـ Firebase Auth)
+const yearDomains = {
+'first': '@first.com',
+'second_chemistry': '@chem.com',
+'second_physics': '@phys.com',
+'third': '@third.com'
+};
 
-            let disableTimestamp = null;
-            if (disableDate && disableTime) {
-                const dateTimeString = `${disableDate}T${disableTime}:00`;
-                disableTimestamp = new Date(dateTimeString).getTime();
-            }
+// خريطة لأسماء السنوات المعروضة (للتخزين في قاعدة البيانات)
+const yearDisplayNames = {
+'first': 'أولى',
+'second_chemistry': 'ثانية كيمياء',
+'second_physics': 'ثانية فيزياء',
+'third': 'ثالثة'
+};
 
-            const email = username + yearDomains[year];
+// لتخزين الشهور المتاحة حاليًا
+let availableMonthsData = [];
 
-            addMemberBtn.disabled = true;
-            addMemberBtn.innerHTML = '<span class="loading-spinner"></span>';
+// قيمة ثابتة بالمللي ثانية لعدد الأيام
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-            try {
-                // استخدام Firebase Auth لإنشاء المستخدم
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const uid = userCredential.user.uid;
 
-                // تخزين البيانات في Firebase Realtime Database
-                await usersRef.child(uid).set({
-                    email: email,
-                    password: password, 
-                    isDisabled: false,
-                    year: year,
-                    disableTimestamp: disableTimestamp
-                });
+function showAlert(message, type = 'success') {
+alertMessageDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+setTimeout(() => {
+alertMessageDiv.innerHTML = '';
+}, 5000);
+}
 
-                showAlert('تمت إضافة العضو بنجاح', 'success');
-                usernameInput.value = '';
-                passwordInput.value = '';
-                yearSelect.value = '';
-                disableDateInput.value = '';
-                disableTimeInput.value = '';
+// ==========================================================
+// ========== وظائف جلب وعرض الشهور للتفعيل ==========
+// ==========================================================
 
-            } catch (error) {
-                console.error('Error adding member:', error);
-                showAlert(`حدث خطأ: ${error.message}`, 'danger');
-            } finally {
-                addMemberBtn.disabled = false;
-                addMemberBtn.innerHTML = 'إضافة العضو';
-            }
-        }
+// جلب قائمة الشهور للسنة المختارة من Firebase
+async function fetchMonths(yearKey) {
+monthsListDiv.innerHTML = '<p style="text-align: center;"><span class="loading-spinner" style="border-top-color: var(--primary-color);"></span> جاري تحميل الشهور...</p>';
+availableMonthsData = [];
 
-        addMemberBtn.addEventListener('click', addMember);
-    </script>
+try {
+const snapshot = await monthsRef.child(yearKey).once('value');
+const monthsData = snapshot.val();
+
+if (monthsData) {
+// تحويل البيانات إلى مصفوفة لسهولة الفرز والتعامل
+availableMonthsData = Object.entries(monthsData).map(([key, value]) => ({
+id: key,
+...value
+}));
+
+// فرز الشهور حسب حقل 'order' إذا وجد
+availableMonthsData.sort((a, b) => (a.order || 999) - (b.order || 999));
+}
+
+renderMonthsCheckboxes();
+} catch (error) {
+console.error("Error fetching months:", error);
+monthsListDiv.innerHTML = '<p style="color: var(--danger-color); text-align: center;">خطأ في تحميل الشهور.</p>';
+}
+}
+
+// إنشاء مربعات الاختيار لحقل الأيام
+function renderMonthsCheckboxes() {
+if (availableMonthsData.length === 0) {
+monthsListDiv.innerHTML = '<p style="text-align: center; color: #555;">لا توجد شهور/وحدات مُضافة لهذه السنة.</p>';
+return;
+}
+
+monthsListDiv.innerHTML = availableMonthsData.map(month => `
+<div class="month-item">
+<div style="display: flex; align-items: center; flex-grow: 1;">
+<input type="checkbox" id="month-${month.id}" data-month-id="${month.id}">
+<label for="month-${month.id}">${month.name || 'شهر غير مسمى'}</label>
+</div>
+<div class="days-control-group">
+<input type="number" id="days-${month.id}" min="1" value="30" class="days-input" data-month-id="${month.id}">
+<span style="font-size: 14px; color: #555;">أيام</span>
+</div>
+</div>
+`).join('');
+
+// إضافة مستمعي أحداث لربط حقل الأيام بمربع الاختيار
+monthsListDiv.querySelectorAll('.days-input').forEach(input => {
+input.addEventListener('input', () => {
+// إذا تم إدخال قيمة في حقل الأيام، يتم تفعيل مربع الاختيار المقابل تلقائيًا
+const monthId = input.dataset.monthId;
+const checkbox = document.getElementById(`month-${monthId}`);
+// يتم تفعيل المربع إذا كانت القيمة المدخلة أكبر من صفر
+if (checkbox && parseInt(input.value) > 0) {
+checkbox.checked = true;
+}
+});
+});
+}
+
+// عند تغيير السنة، قم بتحميل الشهور الجديدة
+yearSelect.addEventListener('change', (event) => {
+const selectedYear = event.target.value;
+if (selectedYear) {
+fetchMonths(selectedYear);
+} else {
+monthsListDiv.innerHTML = '<p style="text-align: center; color: #555;">الرجاء اختيار السنة أولاً...</p>';
+}
+});
+
+// ==========================================================
+// ========== وظيفة إضافة العضو (المُصحَّحة) ==========
+// ==========================================================
+
+async function addMember() {
+const username = usernameInput.value.trim();
+const password = passwordInput.value.trim();
+const yearKey = yearSelect.value;
+const yearDisplayName = yearDisplayNames[yearKey];
+const disableDate = disableDateInput.value;
+const disableTime = disableTimeInput.value;
+
+// التحقق من الإدخالات الأساسية
+if (!username || !password || !yearKey) {
+showAlert('الرجاء إدخال اسم المستخدم، كلمة المرور، واختيار السنة الدراسية.', 'danger');
+return;
+}
+if (password.length < 6) {
+showAlert('يجب أن تكون كلمة المرور 6 أحرف على الأقل.', 'danger');
+return;
+}
+
+let disableTimestamp = null;
+if (disableDate && disableTime) {
+// يتم دمج التاريخ والوقت لحساب الـ Timestamp الشامل لتعطيل الطالب
+const dateTimeString = `${disableDate}T${disableTime}:00`;
+disableTimestamp = new Date(dateTimeString).getTime();
+}
+
+// إنشاء البريد الإلكتروني باستخدام الدومين المخصص
+const email = username + yearDomains[yearKey];
+
+addMemberBtn.disabled = true;
+addMemberBtn.innerHTML = '<span class="loading-spinner"></span>';
+
+try {
+// 1. استخدام Firebase Auth لإنشاء المستخدم
+const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+const uid = userCredential.user.uid;
+
+// 2. تجميع الشهور المفعلة وحساب تاريخ الانتهاء (Timestamp)
+const activeMonthsAccess = {};
+const checkboxes = monthsListDiv.querySelectorAll('input[type="checkbox"]');
+const now = Date.now(); // الوقت الحالي بالمللي ثانية
+
+checkboxes.forEach(checkbox => {
+const monthId = checkbox.dataset.monthId;
+
+if (checkbox.checked) {
+// جلب قيمة الأيام من حقل الإدخال المقابل بأمان
+const daysInput = document.getElementById(`days-${monthId}`);
+
+let days = 30; // القيمة الافتراضية
+
+// التحقق من وجود العنصر وقيمته قبل التحويل
+if (daysInput && daysInput.value) {
+const parsedDays = parseInt(daysInput.value, 10);
+// التحقق من أن القيمة رقم صالح وأكبر من صفر
+if (!isNaN(parsedDays) && parsedDays > 0) {
+days = parsedDays;
+}
+}
+
+// حساب تاريخ انتهاء الصلاحية بالمللي ثانية
+const expiryTimestamp = now + (days * MS_PER_DAY);
+
+// تخزين الـ Timestamp بدلاً من قيمة 'true'
+activeMonthsAccess[monthId] = expiryTimestamp;
+}
+});
+
+// 3. تخزين بيانات المستخدم الأساسية في /users
+await usersRef.child(uid).set({
+email: email,
+password: password,
+isDisabled: false,
+year: yearDisplayName,
+disableTimestamp: disableTimestamp || null
+});
+
+// 4. حفظ تفعيل الشهور (بصيغة Timestamp) في مسار /student_month_access
+if (Object.keys(activeMonthsAccess).length > 0) {
+await studentAccessRef.child(uid).set(activeMonthsAccess);
+}
+
+// 5. مسح الحقول ورسالة النجاح
+showAlert('✅ تمت إضافة الطالب بنجاح وتفعيل الشهور المحددة.', 'success');
+usernameInput.value = '';
+passwordInput.value = '';
+yearSelect.value = '';
+disableDateInput.value = '';
+disableTimeInput.value = '';
+monthsListDiv.innerHTML = '<p style="text-align: center; color: #555;">الرجاء اختيار السنة أولاً...</p>';
+availableMonthsData = [];
+
+
+} catch (error) {
+console.error('Error adding member:', error);
+let errorMessage = error.message;
+
+// تحسين رسائل الخطأ من Firebase Auth
+if (error.code === 'auth/email-already-in-use') {
+errorMessage = 'هذا البريد الإلكتروني (اسم المستخدم) مُستخدم بالفعل.';
+} else if (error.code === 'auth/weak-password') {
+errorMessage = 'كلمة المرور ضعيفة جداً.';
+} else if (error.code === 'auth/invalid-email') {
+errorMessage = 'صيغة البريد الإلكتروني غير صحيحة.';
+}
+
+showAlert(`🚫 حدث خطأ: ${errorMessage}`, 'danger');
+} finally {
+addMemberBtn.disabled = false;
+addMemberBtn.innerHTML = 'إضافة الطالب وتفعيل الشهور';
+}
+}
+
+// ربط الزر بالوظيفة
+addMemberBtn.addEventListener('click', addMember);
+
+// حماية الصفحة: لا تشتغل إلا لو الأدمن مسجل دخول
+guardPage(function(user) {
+    // الأدمن مسجل ✅
+}, 'index.html');
+</script>
 </body>
 </html>

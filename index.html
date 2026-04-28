@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول</title>
+    <title>تسجيل الدخول - لوحة التحكم</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -56,6 +56,13 @@
             border: 1px solid #ddd;
             font-size: 16px;
             text-align: right;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
         }
 
         .btn {
@@ -66,12 +73,21 @@
             color: white;
             cursor: pointer;
             font-weight: 500;
+            font-size: 16px;
             transition: all 0.3s;
+            width: 100%;
+            font-family: 'Tajawal', sans-serif;
         }
 
         .btn:hover {
             opacity: 0.9;
             transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .loading {
@@ -93,19 +109,29 @@
             border-radius: 5px;
             margin-top: 15px;
             display: none;
+            text-align: right;
         }
 
         .alert-danger {
             background-color: #f8d7da;
             color: #721c24;
         }
+
+        .checking-session {
+            color: var(--primary-color);
+            font-size: 14px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="form-container">
+    <div class="form-container" id="login-form">
         <h2>لوحة تحكم المشرف</h2>
         <div class="form-group">
-            <input type="password" id="password-input" placeholder="أدخل كلمة السر" class="form-control">
+            <input type="email" id="email-input" placeholder="البريد الإلكتروني" class="form-control">
+        </div>
+        <div class="form-group">
+            <input type="password" id="password-input" placeholder="كلمة المرور" class="form-control">
         </div>
         <button class="btn" id="login-btn">
             <span id="login-text">دخول</span>
@@ -114,66 +140,82 @@
         <div id="password-alert" class="alert alert-danger"></div>
     </div>
 
+    <!-- جاري التحقق من الجلسة -->
+    <div id="session-check" style="display: none;">
+        <div class="loading" style="border-color: rgba(108,92,231,.3); border-top-color: #6C5CE7; width: 40px; height: 40px;"></div>
+        <p class="checking-session">جاري التحقق من الجلسة...</p>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-functions-compat.js"></script>
+    <script src="auth-guard.js"></script>
 
     <script>
-        // تهيئة Firebase
-        const firebaseConfig = {
-            apiKey: 'AIzaSyBpwRyAO9Hd0y06AFxQP2VJqiwucD02kHE',
-            appId: '1:728424288022:web:3fc8d5379263ca3b99ca37',
-            messagingSenderId: '728424288022',
-            projectId: 'e-learning-3aef4',
-            authDomain: 'e-learning-3aef4.firebaseapp.com',
-            databaseURL: 'https://e-learning-3aef4-default-rtdb.firebaseio.com',
-            storageBucket: 'e-learning-3aef4.firebasestorage.app',
-            measurementId: 'G-GTTZ690T29',
-        };
+        const loginForm = document.getElementById('login-form');
+        const sessionCheck = document.getElementById('session-check');
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        // عند تحميل الصفحة: تحقق هل المستخدم مسجل دخول بالفعل
+        loginForm.style.display = 'none';
+        sessionCheck.style.display = 'block';
 
-        // دالة التحقق من كلمة السر والانتقال للصفحة الأخرى
-        async function checkPassword() {
-            const passwordInput = document.getElementById('password-input').value;
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+                // مسجل دخول → تحقق هل أدمن
+                try {
+                    const snapshot = await firebase.database().ref('admins/' + user.uid).once('value');
+                    if (snapshot.val() === true) {
+                        // أدمن + جلسة محفوظة → ادخل مباشرة
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            // مش مسجل أو مش أدمن → اظهر فورم تسجيل الدخول
+            sessionCheck.style.display = 'none';
+            loginForm.style.display = 'block';
+        });
+
+        // دالة تسجيل الدخول
+        async function handleLogin() {
+            const email = document.getElementById('email-input').value.trim();
+            const password = document.getElementById('password-input').value.trim();
             const loginBtn = document.getElementById('login-btn');
             const loginText = document.getElementById('login-text');
             const loginLoader = document.getElementById('login-loader');
             const passwordAlert = document.getElementById('password-alert');
 
+            if (!email || !password) {
+                passwordAlert.textContent = 'يرجى إدخال البريد الإلكتروني وكلمة المرور.';
+                passwordAlert.style.display = 'block';
+                return;
+            }
+
             loginText.style.display = 'none';
             loginLoader.style.display = 'inline-block';
             loginBtn.disabled = true;
+            passwordAlert.style.display = 'none';
 
-            try {
-                const snapshot = await database.ref('admin/password').once('value');
-                const storedPassword = snapshot.val();
-                
-                if (passwordInput === storedPassword) {
-                    window.location.href = 'admin.html';
-                } else {
-                    passwordAlert.textContent = 'كلمة السر غير صحيحة.';
-                    passwordAlert.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error checking password:', error);
-                passwordAlert.textContent = 'حدث خطأ في التحقق من كلمة السر.';
+            const result = await adminLogin(email, password, 'admin.html');
+
+            if (!result.success) {
+                passwordAlert.textContent = result.error;
                 passwordAlert.style.display = 'block';
-            } finally {
-                loginText.style.display = 'inline-block';
-                loginLoader.style.display = 'none';
-                loginBtn.disabled = false;
             }
+
+            loginText.style.display = 'inline-block';
+            loginLoader.style.display = 'none';
+            loginBtn.disabled = false;
         }
-        
-        document.getElementById('login-btn').addEventListener('click', checkPassword);
+
+        document.getElementById('login-btn').addEventListener('click', handleLogin);
         document.getElementById('password-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                checkPassword();
-            }
+            if (e.key === 'Enter') handleLogin();
+        });
+        document.getElementById('email-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('password-input').focus();
         });
     </script>
 </body>

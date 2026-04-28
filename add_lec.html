@@ -278,17 +278,20 @@ cursor: pointer;
 </div>
 </div>
 </div>
-<script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js"></script>
+<!-- Firebase Auth Guard (compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
+
+<!-- Firebase Modular SDK for Storage/Database operations -->
 <script type="module">
 // Import the functions from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
 import { getDatabase, ref as dbRef, set, remove, get } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js";
 
-// Your Firebase configuration (يجب أن تكون هذه الإعدادات صحيحة)
+// Firebase تم تهيئته في auth-guard.js، لكن الـ modular SDK محتاج app خاص بيه
 const firebaseConfig = {
 apiKey: 'AIzaSyBpwRyAO9Hd0y06AFxQP2VJqiwucD02kHE',
 appId: '1:728424288022:web:3fc8d5379263ca3b99ca37',
@@ -300,8 +303,8 @@ storageBucket: 'e-learning-3aef4.firebasestorage.app',
 measurementId: 'G-GTTZ690T29',
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Modular SDK app
+const app = initializeApp(firebaseConfig, 'modular-app');
 const database = getDatabase(app);
 const storage = getStorage(app);
 
@@ -374,6 +377,11 @@ async function loadMonthsForDeletion(selectedYear) {
     }
 }
 
+
+// حماية الصفحة: لا تشتغل إلا لو الأدمن مسجل دخول
+guardPage(function(user) {
+    // الأدمن مسجل ✅
+}, 'index.html');
 
 document.addEventListener('DOMContentLoaded', () => {
     const titleInput = document.getElementById('title');
