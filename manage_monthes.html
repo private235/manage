@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -58,17 +59,18 @@
             align-items: flex-end;
         }
 
-        .month-form-controls > div {
+        .month-form-controls>div {
             flex-grow: 1;
         }
-        
+
         .month-form-controls label {
-             font-weight: 500;
-             display: block;
-             margin-bottom: 5px;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 5px;
         }
 
-        .form-control, .form-select {
+        .form-control,
+        .form-select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -86,11 +88,11 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        
+
         #add-month-btn:hover:not(:disabled) {
             background-color: #00b38c;
         }
-        
+
         /* الحاوية الرئيسية للطلاب والإدارة */
         .main-container {
             display: flex;
@@ -108,18 +110,20 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             min-width: 300px;
             max-height: 80vh;
-            overflow-y: hidden; /* إخفاء التمرير الخارجي */
+            overflow-y: hidden;
+            /* إخفاء التمرير الخارجي */
         }
 
         .filter-controls {
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 1px solid #eee;
-            display: flex; /* ترتيب عناصر التحكم */
+            display: flex;
+            /* ترتيب عناصر التحكم */
             flex-direction: column;
             gap: 10px;
         }
-        
+
         .filter-controls label {
             font-weight: 500;
             display: block;
@@ -127,7 +131,8 @@
         }
 
         #student-list-container {
-            max-height: calc(80vh - 180px); /* تخصيص المساحة لقائمة التمرير بعد إضافة حقل البحث */
+            max-height: calc(80vh - 180px);
+            /* تخصيص المساحة لقائمة التمرير بعد إضافة حقل البحث */
             overflow-y: auto;
         }
 
@@ -159,7 +164,7 @@
             font-size: 12px;
             color: #777;
         }
-        
+
         .student-item.active .student-year {
             color: white;
         }
@@ -196,7 +201,7 @@
             justify-content: space-between;
             padding: 12px 0;
             border-bottom: 1px dashed #eee;
-            gap: 15px; 
+            gap: 15px;
         }
 
         .month-item label {
@@ -209,7 +214,8 @@
         .month-item-controls {
             display: flex;
             align-items: center;
-            gap: 10px; /* Gap between status, duration, and checkbox */
+            gap: 10px;
+            /* Gap between status, duration, and checkbox */
         }
 
         .duration-control {
@@ -219,7 +225,7 @@
         }
 
         .duration-input {
-            width: 70px; 
+            width: 70px;
             padding: 6px;
             text-align: center;
             border: 1px solid #ccc;
@@ -228,19 +234,20 @@
         }
 
         .duration-control span {
-             font-size: 14px;
-             white-space: nowrap;
+            font-size: 14px;
+            white-space: nowrap;
         }
 
         .status-text {
             font-size: 14px;
             font-weight: 500;
-            color: #155724; /* Success/Remaining color */
+            color: #155724;
+            /* Success/Remaining color */
             white-space: nowrap;
         }
-        
+
         .status-text.expired {
-             color: var(--danger-color);
+            color: var(--danger-color);
         }
 
         .month-item input[type="checkbox"] {
@@ -268,7 +275,7 @@
         #save-changes-btn:hover:not(:disabled) {
             background-color: #00b38c;
         }
-        
+
         #save-changes-btn:disabled {
             background-color: #ccc;
             cursor: not-allowed;
@@ -291,7 +298,7 @@
             background-color: #f8d7da;
             color: #721c24;
         }
-        
+
         .loading-spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
             border-top: 4px solid var(--primary-color);
@@ -303,10 +310,15 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        
+
         .empty-state {
             text-align: center;
             color: #999;
@@ -314,6 +326,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <h2 class="header">لوحة تحكم المسؤول</h2>
@@ -337,7 +350,7 @@
                 <input type="text" id="new-month-name" class="form-control" placeholder="مثال: الوحدة الأولى - التأسيس">
             </div>
             <div>
-                 <label for="new-month-order">ترتيب الظهور</label>
+                <label for="new-month-order">ترتيب الظهور</label>
                 <input type="number" id="new-month-order" class="form-control" value="1">
             </div>
             <button id="add-month-btn">إضافة الشهر</button>
@@ -349,7 +362,7 @@
 
         <div class="student-list-panel">
             <div class="panel-title">قائمة الطلاب</div>
-            
+
             <div class="filter-controls">
                 <div>
                     <label for="year-filter">فلترة حسب السنة:</label>
@@ -364,10 +377,11 @@
 
                 <div>
                     <label for="search-input">البحث بالاسم/الإيميل:</label>
-                    <input type="text" id="search-input" class="form-control" placeholder="اكتب جزء من الاسم أو الإيميل..." dir="auto">
+                    <input type="text" id="search-input" class="form-control"
+                        placeholder="اكتب جزء من الاسم أو الإيميل..." dir="auto">
                 </div>
             </div>
-            
+
             <div id="student-list-container">
                 <div id="student-list">
                     <div class="empty-state">
@@ -390,30 +404,13 @@
 
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="auth-guard.js"></script>
 
     <script>
-        // ==========================================================
-        // ========== تهيئة وإعداد Firebase والثوابت ==========
-        // ==========================================================
-        
-        // **تعديل: يجب استبدال هذا التكوين بمعلومات مشروعك الحقيقية**
-        const firebaseConfig = {
-            apiKey: 'AIzaSyBpwRyAO9Hd0y06AFxQP2VJqiwucD02kHE',
-            appId: '1:728424288022:web:3fc8d5379263ca3b99ca37',
-            messagingSenderId: '728424288022',
-            projectId: 'e-learning-3aef4',
-            authDomain: 'e-learning-3aef4.firebaseapp.com',
-            databaseURL: 'https://e-learning-3aef4-default-rtdb.firebaseio.com',
-            storageBucket: 'e-learning-3aef4.firebasestorage.app',
-            measurementId: 'G-GTTZ690T29',
-        };
-        
-        if (!firebase.apps.length) {
-             firebase.initializeApp(firebaseConfig);
-        }
-
+        // Firebase تم تهيئته في auth-guard.js
         const database = firebase.database();
         const usersRef = database.ref('users');
         const monthsRef = database.ref('months');
@@ -455,7 +452,7 @@
                 alertMessageDiv.innerHTML = '';
             }, 5000);
         }
-        
+
         // ==========================================================
         // ========== وظائف إدارة الشهور (الإضافة) ==========
         // ==========================================================
@@ -476,7 +473,7 @@
             try {
                 // إنشاء مفتاح فريد للشهر
                 const newMonthRef = monthsRef.child(yearKey).push();
-                
+
                 await newMonthRef.set({
                     name: monthName,
                     order: order,
@@ -487,7 +484,7 @@
 
                 // تحديث بيانات الشهور المخزنة محلياً
                 await fetchAllMonths();
-                
+
                 // إعادة تعيين الحقول
                 newMonthNameInput.value = '';
                 newMonthOrderInput.value = (order + 1).toString(); // اقترح الترتيب التالي
@@ -508,7 +505,7 @@
         // ==========================================================
         // ========== وظائف جلب وعرض بيانات الطلاب والشهور ==========
         // ==========================================================
-        
+
         // جلب جميع الشهور المتاحة مرة واحدة (لتقليل عدد القراءات)
         async function fetchAllMonths() {
             try {
@@ -532,16 +529,16 @@
                 if (studentsData) {
                     Object.entries(studentsData).forEach(([uid, data]) => {
                         const yearKey = data.year ? yearKeysMap[data.year] || data.year : 'غير محدد';
-                        allStudents.push({ 
-                            uid, 
+                        allStudents.push({
+                            uid,
                             email: data.email || 'غير معروف',
-                            yearName: data.year || 'غير محددة', 
-                            yearKey: yearKey, 
-                            ...data 
+                            yearName: data.year || 'غير محددة',
+                            yearKey: yearKey,
+                            ...data
                         });
                     });
                 }
-                
+
                 renderStudentList();
 
             } catch (error) {
@@ -554,14 +551,14 @@
         function renderStudentList() {
             const currentYearFilter = yearFilterSelect.value;
             const currentSearchTerm = searchInput.value.trim().toLowerCase();
-            
+
             const filteredStudents = allStudents.filter(student => {
                 // 1. فلترة السنة
                 const yearMatch = (currentYearFilter === 'all') || (student.yearName === currentYearFilter);
 
                 // 2. فلترة البحث
                 const emailPrefix = student.email.split('@')[0].toLowerCase();
-                const studentName = (student.name || '').toLowerCase(); 
+                const studentName = (student.name || '').toLowerCase();
                 const emailMatch = student.email.toLowerCase().includes(currentSearchTerm);
                 const nameMatch = studentName.includes(currentSearchTerm);
                 const searchMatch = !currentSearchTerm || emailMatch || nameMatch || emailPrefix.includes(currentSearchTerm);
@@ -584,14 +581,14 @@
             document.querySelectorAll('.student-item').forEach(item => {
                 item.addEventListener('click', () => selectStudent(item.dataset.uid));
             });
-            
+
             // إعادة تفعيل التحديد إذا كان الطالب المختار لا يزال في القائمة
             if (selectedStudentId) {
                 const activeItem = document.querySelector(`.student-item[data-uid="${selectedStudentId}"]`);
                 if (activeItem) activeItem.classList.add('active');
             }
         }
-        
+
         // ربط قائمة الفلترة وحقل البحث بوظيفة عرض القائمة
         yearFilterSelect.addEventListener('change', renderStudentList);
         searchInput.addEventListener('input', renderStudentList);
@@ -601,10 +598,10 @@
             if (!timestamp || typeof timestamp !== 'number') {
                 return { status: 'غير مفعل', days: 0, isExpired: true };
             }
-            
+
             const msInDay = 24 * 60 * 60 * 1000;
             const remainingMs = timestamp - Date.now();
-            
+
             if (remainingMs <= 0) {
                 return { status: 'منتهي الصلاحية', days: 0, isExpired: true };
             }
@@ -623,7 +620,7 @@
 
             selectedStudentId = uid;
             selectedStudentData = allStudents.find(s => s.uid === uid);
-            
+
             managementContentDiv.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div><p>جاري جلب حالة تفعيل الشهور للطالب...</p></div>`;
             saveChangesBtn.disabled = true;
 
@@ -632,22 +629,22 @@
             // 1. جلب حالة تفعيل الشهور للطالب (من مسار student_month_access)
             const accessSnapshot = await studentAccessRef.child(uid).once('value');
             // accessData is now {monthId: expiryTimestamp, ...}
-            const studentAccess = accessSnapshot.val() || {}; 
-            
+            const studentAccess = accessSnapshot.val() || {};
+
             // 2. تحديد مفتاح السنة
-            const yearKey = selectedStudentData.yearKey; 
+            const yearKey = selectedStudentData.yearKey;
 
             if (!yearKey || yearKey === 'غير محدد') {
                 managementContentDiv.innerHTML = `<div class="empty-state"><p style="color: var(--danger-color);">لم يتم تحديد سنة دراسية للطالب بشكل صحيح.</p></div>`;
                 return;
             }
-            
+
             // 3. الحصول على قائمة الشهور الكاملة لتلك السنة
             const availableMonths = allMonthsData[yearKey];
-            
+
             if (!availableMonths || Object.keys(availableMonths).length === 0) {
-                 managementContentDiv.innerHTML = `<div class="empty-state"><p>لا توجد شهور مُضافة لسنة "${selectedStudentData.yearName}" في قاعدة البيانات. <br> يمكنك إضافتها من الأعلى.</p></div>`;
-                 return;
+                managementContentDiv.innerHTML = `<div class="empty-state"><p>لا توجد شهور مُضافة لسنة "${selectedStudentData.yearName}" في قاعدة البيانات. <br> يمكنك إضافتها من الأعلى.</p></div>`;
+                return;
             }
 
             // 4. عرض الشهور مع مربعات الاختيار (checkboxes) وحقل الأيام
@@ -661,15 +658,15 @@
             monthsArray.forEach(month => {
                 const expiryTimestamp = studentAccess[month.id];
                 const { status, days, isExpired } = calculateRemainingDays(expiryTimestamp);
-                
+
                 // يتم تحديد حالة التفعيل بناءً على انتهاء الصلاحية
                 const isChecked = !isExpired && days > 0;
-                
+
                 let statusClass = isExpired ? 'expired' : '';
                 let statusTextHtml = `<span class="status-text ${statusClass}">${status}</span>`;
-                
+
                 // عدد الأيام المعروضة هو المتبقي إذا كان مفعلاً، أو الافتراضي (30) إذا كان غير مفعل أو منتهي
-                let initialDays = isChecked ? days : 30; 
+                let initialDays = isChecked ? days : 30;
 
                 monthHtml += `
                     <div class="month-item" data-month-id="${month.id}">
@@ -694,7 +691,7 @@
                     </div>
                 `;
             });
-            
+
             monthHtml += `</div>`;
             managementContentDiv.innerHTML = monthHtml;
             saveChangesBtn.disabled = false;
@@ -709,31 +706,31 @@
                 showAlert('الرجاء اختيار طالب أولاً.', 'danger');
                 return;
             }
-            
+
             saveChangesBtn.disabled = true;
             saveChangesBtn.innerHTML = '<span class="loading-spinner" style="width: 16px; height: 16px;"></span> جاري الحفظ...';
 
             try {
                 const updates = {};
                 const monthItems = document.querySelectorAll('#month-controls .month-item');
-                
+
                 monthItems.forEach(item => {
                     const monthId = item.dataset.monthId;
                     const checkbox = item.querySelector(`input[type="checkbox"]`);
                     const daysInput = item.querySelector(`.duration-input`);
-                    
+
                     if (checkbox.checked) {
                         const days = parseInt(daysInput.value) || 30;
-                        
+
                         // Calculate expiry timestamp (Current time + days * ms_in_day)
                         const msInDay = 24 * 60 * 60 * 1000;
                         const expiryTimestamp = Date.now() + (days * msInDay);
-                        
+
                         // Store the timestamp in the database
-                        updates[monthId] = expiryTimestamp; 
+                        updates[monthId] = expiryTimestamp;
                     } else {
                         // If unchecked, set to null to delete the month access
-                        updates[monthId] = null; 
+                        updates[monthId] = null;
                     }
                 });
 
@@ -742,7 +739,7 @@
                 await studentAccessRef.child(selectedStudentId).update(updates);
 
                 showAlert('✅ تم حفظ التغييرات بنجاح وتحديث صلاحية الشهور.', 'success');
-                
+
                 // إعادة تحميل حالة الوصول لعرض الأيام المتبقية المحدثة
                 await selectStudent(selectedStudentId);
 
@@ -751,17 +748,20 @@
                 showAlert(`🚫 فشل الحفظ: ${error.message}`, 'danger');
             } finally {
                 // التأكد من إعادة تفعيل الزر في حال حدوث أي خطأ
-                 saveChangesBtn.disabled = false;
-                 saveChangesBtn.innerHTML = 'حفظ التغييرات';
+                saveChangesBtn.disabled = false;
+                saveChangesBtn.innerHTML = 'حفظ التغييرات';
             }
         }
 
         // ربط زر الحفظ بالوظيفة
         saveChangesBtn.addEventListener('click', saveChanges);
 
-        // تشغيل عملية جلب الطلاب عند تحميل الصفحة
-        fetchStudents();
-        
+        // حماية الصفحة: لا تشتغل إلا لو الأدمن مسجل دخول
+        guardPage(function(user) {
+            fetchStudents();
+        }, 'index.html');
+
     </script>
 </body>
+
 </html>
