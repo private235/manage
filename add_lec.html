@@ -278,20 +278,18 @@ cursor: pointer;
 </div>
 </div>
 </div>
-<!-- Firebase Auth Guard (compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 <script src="auth-guard.js"></script>
 
-<!-- Firebase Modular SDK for Storage/Database operations -->
 <script type="module">
 // Import the functions from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
 import { getDatabase, ref as dbRef, set, remove, get } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
-// Firebase تم تهيئته في auth-guard.js، لكن الـ modular SDK محتاج app خاص بيه
 const firebaseConfig = {
 apiKey: 'AIzaSyBpwRyAO9Hd0y06AFxQP2VJqiwucD02kHE',
 appId: '1:728424288022:web:3fc8d5379263ca3b99ca37',
@@ -303,8 +301,9 @@ storageBucket: 'e-learning-3aef4.firebasestorage.app',
 measurementId: 'G-GTTZ690T29',
 };
 
-// Modular SDK app
-const app = initializeApp(firebaseConfig, 'modular-app');
+// هنا إحنا بنجيب التطبيق الأساسي اللي مسجل الدخول بواسطة auth-guard.js
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app); // سحب بيانات الأدمن المسجل لكي يتعرف عليها النظام
 const database = getDatabase(app);
 const storage = getStorage(app);
 
@@ -312,7 +311,6 @@ const storage = getStorage(app);
 function getDbPath(year, month = '_uncategorized_', lectureId = null) {
     let path = `lecturess/${year}`;
     
-    // إذا كان الشهر محدداً (وليس القيمة الخاصة لـ 'غير مصنف')، نضيفه إلى المسار
     if (month && month !== '_uncategorized_') {
         path += `/${month}`;
     }
@@ -329,7 +327,6 @@ function getMonthDisplayName(key) {
     if (key === '_uncategorized_') {
         return 'غير مصنف';
     }
-    // جدول ترجمة الأكواد إلى أسماء عربية
     if (key.startsWith('month_')) {
         const monthNumber = key.split('_')[1];
         const monthNames = {
@@ -338,16 +335,14 @@ function getMonthDisplayName(key) {
             '7': 'الشهر السابع', '8': 'الشهر الثامن', '9': 'الشهر التاسع',
             '10': 'الشهر العاشر', '11': 'الشهر الحادي عشر', '12': 'الشهر الثاني عشر'
         };
-        // التحقق من أن رقم الشهر موجود في جدول الترجمة وإلا يعرض الكود
         return monthNames[monthNumber] || key; 
     }
     return key;
 }
 
-// ** الوظيفة الجديدة: تحميل الشهور الموجودة فعلياً للحذف **
+// تحميل الشهور الموجودة فعلياً للحذف
 async function loadMonthsForDeletion(selectedYear) {
     const monthSelect = document.getElementById('deleteMonth');
-    // إعادة تعيين القائمة وتضمين "غير مصنف" دائماً
     monthSelect.innerHTML = '<option value="_uncategorized_" selected>غير مصنف</option>'; 
 
     try {
@@ -358,14 +353,10 @@ async function loadMonthsForDeletion(selectedYear) {
             Object.keys(yearData).forEach(key => {
                 const child = yearData[key];
                 
-                // نعتبر العقدة "شهراً" أو "تصنيفاً" إذا كانت تحمل بداخلها محاضرات (أي ليست هي محاضرة بحد ذاتها)
                 if (typeof child === 'object' && child !== null && !child.title) {
-                    
-                    // تحقق إضافي: نعتبره شهراً إذا كان يحتوي على عناصر فرعية
                     if (Object.keys(child).length > 0) {
                         const option = document.createElement('option');
-                        option.value = key; // القيمة الداخلية (الكود)
-                        // **** التعديل هنا لتعيين النص الظاهر هو الاسم العربي ****
+                        option.value = key;
                         option.textContent = getMonthDisplayName(key); 
                         monthSelect.appendChild(option);
                     }
@@ -376,7 +367,6 @@ async function loadMonthsForDeletion(selectedYear) {
         console.error("Error loading months:", error);
     }
 }
-
 
 // حماية الصفحة: لا تشتغل إلا لو الأدمن مسجل دخول
 guardPage(function(user) {
@@ -397,7 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressText = document.getElementById('progressText');
     const uploadText = document.getElementById('uploadText');
 
-    // Deletion elements
     const deleteYearSelect = document.getElementById('deleteYear');
     const deleteMonthSelect = document.getElementById('deleteMonth'); 
     const showDeleteButton = document.getElementById('showDeleteButton');
@@ -405,15 +394,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModal = document.querySelector('#deleteModal .close');
     const lecturesList = document.getElementById('lecturesList');
 
-    // ** التهيئة الأولية والتحميل الديناميكي للشهور **
     loadMonthsForDeletion(deleteYearSelect.value);
     deleteYearSelect.addEventListener('change', () => {
         loadMonthsForDeletion(deleteYearSelect.value);
     });
-    // **********************************************
 
-
-    // Update file name display
     videoFileInput.addEventListener('change', (event) => {
         const fileName = event.target.files[0] ? event.target.files[0].name : 'لم يتم اختيار فيديو';
         videoFileNameSpan.textContent = fileName;
@@ -430,7 +415,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const videoFile = videoFileInput.files[0];
         const logoFile = logoFileInput.files[0];
         
-        // المسار الافتراضي (غير مصنف) لعملية الرفع الجديدة
         const selectedMonth = '_uncategorized_'; 
 
         if (!title || !lectureNumber || !videoFile) {
@@ -438,7 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Show uploading UI
         uploadText.textContent = 'جاري الرفع...';
         uploadButton.disabled = true;
         uploadingStatus.classList.remove('hidden');
@@ -447,7 +430,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const lectureId = Date.now().toString();
             const baseName = `${lectureNumber}_${title.replace(/\s/g, '_')}`;
 
-            // Upload video 
             const videoStorageRef = storageRef(storage, `lectures_data/${selectedYear}/${baseName}_${lectureId}.mp4`);
             const videoUploadTask = uploadBytesResumable(videoStorageRef, videoFile);
 
@@ -460,7 +442,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 (error) => {
                     console.error('Video upload failed', error);
                     alert(`حدث خطأ أثناء رفع الفيديو: ${error.message}`);
-                    // Reset UI on error
                     uploadText.textContent = 'رفع المحاضرة';
                     uploadButton.disabled = false;
                     uploadingStatus.classList.add('hidden');
@@ -469,7 +450,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     try {
                         const videoUrl = await getDownloadURL(videoUploadTask.snapshot.ref);
 
-                        // Upload logo (optional)
                         let logoUrl = '';
                         if (logoFile) {
                             const logoStorageRef = storageRef(storage, `lectures_data/${selectedYear}/logos/${baseName}_${lectureId}.jpg`);
@@ -478,7 +458,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             logoUrl = await getDownloadURL(logoUploadTask.snapshot.ref);
                         }
 
-                        // Save data to Realtime Database - سيتم حفظه مباشرة تحت السنة (lecturess/year/lectureId)
                         const dbPath = getDbPath(selectedYear, selectedMonth, lectureId);
 
                         await set(dbRef(database, dbPath), {
@@ -486,7 +465,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             title: title,
                             lectureNumber: lectureNumber,
                             year: selectedYear,
-                            // يجب تخزين month حتى لو كانت '_uncategorized_' لمساعدتنا في مسار الحذف
                             month: selectedMonth, 
                             videoUrl: videoUrl,
                             logoUrl: logoUrl,
@@ -495,7 +473,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         alert('تم رفع المحاضرة بنجاح!');
                         
-                        // Reset form
                         titleInput.value = '';
                         lectureNumberInput.value = '';
                         videoFileInput.value = '';
@@ -503,14 +480,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         videoFileNameSpan.textContent = 'لم يتم اختيار فيديو';
                         logoFileNameSpan.textContent = 'لم يتم اختيار شعار';
 
-                        // Reset UI
                         uploadText.textContent = 'رفع المحاضرة';
                         uploadButton.disabled = false;
                         uploadingStatus.classList.add('hidden');
                     } catch (error) {
                         console.error('Failed to save data or upload logo', error);
                         alert(`حدث خطأ بعد رفع الفيديو: ${error.message}`);
-                        // Reset UI on error
                         uploadText.textContent = 'رفع المحاضرة';
                         uploadButton.disabled = false;
                         uploadingStatus.classList.add('hidden');
@@ -520,21 +495,18 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Upload failed', error);
             alert(`حدث خطأ أثناء رفع المحاضرة: ${error.message}`);
-            // Reset UI in case of general error
             uploadText.textContent = 'رفع المحاضرة';
             uploadButton.disabled = false;
             uploadingStatus.classList.add('hidden');
         }
     });
 
-    // ** DELETE LECTURE LOGIC **
     showDeleteButton.addEventListener('click', async () => {
         const selectedYear = deleteYearSelect.value;
-        const selectedMonth = deleteMonthSelect.value; // الشهر/التصنيف المختار
+        const selectedMonth = deleteMonthSelect.value; 
         lecturesList.innerHTML = '';
 
         try {
-            // Fetch data from the selected path (يحدد المسار سواء كان مصنفاً أو غير مصنف)
             const dbPath = getDbPath(selectedYear, selectedMonth);
             const snapshot = await get(dbRef(database, dbPath));
 
@@ -543,18 +515,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 let lectures = {};
                 
                 if (selectedMonth === '_uncategorized_') {
-                    // تصفية العناصر التي هي محاضرات مباشرة (تحوي title)
                     Object.keys(lecturesData).forEach(key => {
                         if (lecturesData[key] && lecturesData[key].title) {
                             lectures[key] = lecturesData[key];
                         }
                     });
                 } else {
-                    // إذا كان مسار شهر محدد، فالعناصر هي المحاضرات بداخله
                     lectures = lecturesData;
                 }
 
-                
                 const lectureKeys = Object.keys(lectures).filter(key => lectures[key] && lectures[key].title);
 
                 if (lectureKeys.length > 0) {
@@ -562,7 +531,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         const lecture = lectures[lectureId];
                         const li = document.createElement('li');
                         li.className = 'delete-list-item';
-                        // تمرير month للحذف بشكل صحيح
                         li.innerHTML = `
                             <span>${lecture.lectureNumber || ''} - ${lecture.title}</span>
                             <button onclick="deleteLecture('${selectedYear}', '${lectureId}', '${lecture.videoUrl}', '${lecture.logoUrl || ''}', '${selectedMonth}')">حذف</button>
@@ -593,19 +561,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // الدالة العامة للحذف
     window.deleteLecture = async function(year, lectureId, videoUrl, logoUrl, month) {
         const confirmDelete = confirm('هل أنت متأكد من حذف هذه المحاضرة؟');
         if (!confirmDelete) return;
 
         try {
-            // تحديد مسار قاعدة البيانات للحذف باستخدام الدالة الموحدة
             const dbPath = getDbPath(year, month, lectureId);
 
-            // Delete from Realtime Database
             await remove(dbRef(database, dbPath));
 
-            // Delete from Storage
             const videoStorageRef = storageRef(storage, videoUrl);
             await deleteObject(videoStorageRef);
 
@@ -617,15 +581,12 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('تم حذف المحاضرة بنجاح!');
             deleteModal.style.display = 'none';
             
-            // Reload the lecture list
             showDeleteButton.click();
-            // إعادة تحميل الشهور أيضاً في حال تم حذف آخر محاضرة في شهر
-             loadMonthsForDeletion(deleteYearSelect.value); 
+            loadMonthsForDeletion(deleteYearSelect.value); 
         } catch (error) {
             console.error("Error deleting lecture:", error);
             alert("تم حذف بيانات المحاضرة من قاعدة البيانات. حدث خطأ أثناء حذف الملفات المرفوعة (قد لا يكون الملف موجودًا أصلاً).");
             
-            // Reload the lecture list
             showDeleteButton.click();
             loadMonthsForDeletion(deleteYearSelect.value); 
         }
